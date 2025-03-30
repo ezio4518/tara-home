@@ -1,4 +1,7 @@
-git switch -C <branch-name>
+git switch <branch-name>
 git branch
+--inside main
 git fetch
 git merge <branch-name>
+--inside testing
+git pull origin main
