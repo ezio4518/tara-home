@@ -1,4 +1,4 @@
 git switch -C <branch-name>
 git branch
 git fetch
-git merge <branch-name></branch-name>
+git merge <branch-name>
