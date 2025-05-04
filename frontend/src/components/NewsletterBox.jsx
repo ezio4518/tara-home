@@ -1,7 +1,8 @@
 import React from 'react'
 
 const NewsletterBox = () => {
-
+    // Handler for form submission
+    // This function prevents the default form submission behavior ie marking it fill and not reaload page after submitting it
     const onSubmitHandler = (event) => {
         event.preventDefault();
     }

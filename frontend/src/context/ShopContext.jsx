@@ -153,7 +153,7 @@ const ShopContextProvider = (props) => {
         }
     }, [token])
 
-    //when we add varisblre state or func in this value object then we can access it in any component by using useContext(ShopContext)
+    //when we add variable state or func in this value object then we can access it in any component by using useContext(ShopContext)
     const value = {
         products, currency, delivery_fee,
         search, setSearch, showSearch, setShowSearch,

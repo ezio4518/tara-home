@@ -14,7 +14,8 @@ const Collection = () => {
   const [sortType,setSortType] = useState('relavent')
 
   const toggleCategory = (e) => {
-
+    //agr category me wo item hai to usko hata do warna add kar do
+    //e.target.value se wo value mil jaegi jo checkbox me hai
     if (category.includes(e.target.value)) {
         setCategory(prev=> prev.filter(item => item !== e.target.value))
     }
