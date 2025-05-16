@@ -16,7 +16,6 @@ const Add = ({ token }) => {
   const [category, setCategory] = useState("Men");
   const [subCategory, setSubCategory] = useState("Topwear");
   const [bestseller, setBestseller] = useState(false);
-  const [sizes, setSizes] = useState([]);
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -30,7 +29,6 @@ const Add = ({ token }) => {
       formData.append("category", category);
       formData.append("subCategory", subCategory);
       formData.append("bestseller", bestseller);
-      formData.append("sizes", JSON.stringify(sizes));
 
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
@@ -52,7 +50,6 @@ const Add = ({ token }) => {
         setImage3(false);
         setImage4(false);
         setPrice("");
-        setSizes([]);
         setBestseller(false);
       } else {
         toast.error(response.data.message);
@@ -194,29 +191,7 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      <div>
-        <p className="mb-2">Product Sizes</p>
-        <div className="flex gap-3">
-          {["S", "M", "L", "XL", "XXL"].map((item, index) => (
-            <div
-              onClick={() =>
-                sizes.includes(item)
-                  ? setSizes((prev) => prev.filter((i) => i !== item))
-                  : setSizes((prev) => [...prev, item])
-              }
-              key={index}
-            >
-              <p
-                className={`${
-                  sizes.includes(item) ? "bg-pink-100" : "bg-slate-200"
-                } px-3 py-1 cursor-pointer`}
-              >
-                {item}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Removed Product Sizes section */}
 
       <div className="flex gap-2 mt-2">
         <input

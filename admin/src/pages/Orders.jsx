@@ -42,8 +42,6 @@ const Orders = ({ token }) => {
     fetchAllOrders()
   }, [token])
 
-//checking git
-
   return (
     <div style={{ color: '#40350A' }}>
       <h3 className="text-lg font-semibold mb-4">Order Page</h3>
@@ -60,7 +58,7 @@ const Orders = ({ token }) => {
                 <div>
                   {order.items.map((item, index) => (
                     <p className='py-0.5' key={index}>
-                      {item.name} x {item.quantity} <span>{item.size}</span>{index !== order.items.length - 1 && ','}
+                      {item.name} x {item.quantity}{index !== order.items.length - 1 && ','}
                     </p>
                   ))}
                 </div>
