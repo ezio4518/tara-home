@@ -2,18 +2,20 @@ import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import axios from "axios";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const Orders = () => {
   const { backendUrl, token, currency } = useContext(ShopContext);
 
   const [orderData, setorderData] = useState([]);
+  const [loadingIndex, setLoadingIndex] = useState(null); // Track which button is loading
 
-  const loadOrderData = async () => {
+  const loadOrderData = async (index) => {
     try {
       if (!token) {
         return null;
       }
-
+      setLoadingIndex(index); // Set loading for this button
       const response = await axios.post(
         backendUrl + "/api/order/userorders",
         {},
@@ -32,11 +34,15 @@ const Orders = () => {
         });
         setorderData(allOrdersItem.reverse());
       }
-    } catch (error) {}
+    } catch (error) {
+      // handle error if needed
+    } finally {
+      setLoadingIndex(null); // Reset loading
+    }
   };
 
   useEffect(() => {
-    loadOrderData();
+    loadOrderData(null); // Load all orders on mount, no button loading
   }, [token]);
 
   return (
@@ -61,7 +67,6 @@ const Orders = () => {
                     {item.price}
                   </p>
                   <p>Quantity: {item.quantity}</p>
-                  {/* Removed Size */}
                 </div>
                 <p className="mt-1">
                   Date:{" "}
@@ -81,10 +86,15 @@ const Orders = () => {
                 <p className="text-sm md:text-base">{item.status}</p>
               </div>
               <button
-                onClick={loadOrderData}
-                className="border px-4 py-2 text-sm font-medium rounded-sm"
+                onClick={() => loadOrderData(index)}
+                className="border px-4 py-2 text-sm font-medium rounded-sm w-28 h-10 flex items-center justify-center"
+                disabled={loadingIndex === index}
               >
-                Track Order
+                {loadingIndex === index ? (
+                  <ClipLoader color="#A1876F" size={20} />
+                ) : (
+                  "Track Order"
+                )}
               </button>
             </div>
           </div>

@@ -2,6 +2,10 @@ import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
+import { LuSearch } from "react-icons/lu";
+import { FaUserCircle } from "react-icons/fa";
+import { FaCartShopping } from "react-icons/fa6";
+import { LuMenu } from "react-icons/lu";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false); //for sidebar menu
@@ -50,23 +54,25 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center gap-6">
-        <img
+        <LuSearch
           onClick={() => {
             setShowSearch(true);
             navigate("/collection");
           }}
-          src={assets.search_icon}
-          className="w-5 cursor-pointer"
-          alt=""
+          className="cursor-pointer"
+          color="#40350A"
+          size={24}
+          // style={{ width: "24px", height: "24px" }} // You can increase to 28px or 32px as needed
         />
 
         <div className="group relative">
-          <img
+          <FaUserCircle
             onClick={() => (token ? null : navigate("/login"))}
-            className="w-5 cursor-pointer"
-            src={assets.profile_icon}
-            alt=""
+            className="cursor-pointer"
+            size={24} // you can change size as needed
+            color="#40350A"
           />
+
           {/* Dropdown Menu */}
           {token && (
             <div className="group-hover:block hidden absolute dropdown-menu right-0 pt-4">
@@ -94,17 +100,17 @@ const Navbar = () => {
           )}
         </div>
         <Link to="/cart" className="relative">
-          <img src={assets.cart_icon} className="w-5 min-w-5" alt="" />
+          <FaCartShopping size={22} color="#40350A" />
           <p className="absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-[#40350A] text-white aspect-square rounded-full text-[8px]">
             {getCartCount()}
           </p>
         </Link>
         {/* only visible for small screen */}
-        <img
+        <LuMenu
           onClick={() => setVisible(true)}
-          src={assets.menu_icon}
-          className="w-5 cursor-pointer sm:hidden"
-          alt=""
+          className="sm:hidden cursor-pointer"
+          size={25}
+          color="#40350A"
         />
       </div>
 

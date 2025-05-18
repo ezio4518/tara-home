@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProduct from "../components/RelatedProduct";
+import { toast } from "react-toastify"; // <-- Add this import
 
 const Product = () => {
   const { productId } = useParams();
@@ -23,6 +24,12 @@ const Product = () => {
   useEffect(() => {
     fetchProductData();
   }, [productId, products]);
+
+  // Handler to add product and show toast
+  const handleAddToCart = (id) => {
+    addToCart(id);
+    toast.success("Product added to cart!");
+  };
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
@@ -58,7 +65,7 @@ const Product = () => {
           </p>
           {/* Removed size selection */}
           <button
-            onClick={() => addToCart(productData._id)}
+            onClick={() => handleAddToCart(productData._id)}
             className="bg-[#40350A] text-[#F0E1C6] px-8 py-3 text-sm active:bg-[#2e2607] cursor-pointer"
           >
             ADD TO CART

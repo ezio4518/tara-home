@@ -8,7 +8,7 @@ import axios from "axios";
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
-  const currency = "$"; //yha se change krege to sab jagah change ho jaega
+  const currency = "₹"; //yha se change krege to sab jagah change ho jaega
   const delivery_fee = 10;
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const [search, setSearch] = useState("");
