@@ -7,6 +7,8 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
+import "./utils/orderEmailCron.js"; // Must be after DB connection setup
+
 
 // App Config
 const app = express()
