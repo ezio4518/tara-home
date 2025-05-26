@@ -17,6 +17,8 @@ const PlaceOrder = () => {
     getCartAmount,
     delivery_fee,
     products,
+    coin,
+    getUserInfo
   } = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -87,7 +89,7 @@ const PlaceOrder = () => {
       let orderData = {
         address: formData,
         items: orderItems,
-        amount: getCartAmount() + delivery_fee,
+        amount: getCartAmount() + delivery_fee - coin,
       };
 
       switch (method) {
@@ -100,6 +102,7 @@ const PlaceOrder = () => {
           );
           if (response.data.success) {
             setCartItems({});
+            await getUserInfo(token); 
             navigate("/orders");
           } else {
             toast.error(response.data.message);
@@ -291,7 +294,7 @@ const PlaceOrder = () => {
           <div className="w-full text-end mt-8">
             <button
               type="submit"
-              className="bg-[#40350A] text-[#F0E1C6] px-16 py-3 text-sm"
+              className="bg-[#40350A] text-[#F0E1C6] px-16 py-3 text-sm cursor-pointer"
             >
               PLACE ORDER
             </button>

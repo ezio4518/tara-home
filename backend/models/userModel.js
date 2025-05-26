@@ -4,6 +4,7 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    coin: { type: Number, default: 50 },
     cartData: { type: Object, default: {} }
 }, { minimize: false })
 

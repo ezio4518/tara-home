@@ -17,6 +17,7 @@ const Navbar = () => {
     navigate,
     token,
     setToken,
+    coin,
     setCartItems,
   } = useContext(ShopContext);
 
@@ -58,11 +59,11 @@ const Navbar = () => {
         <div className="relative inline-block">
           <button className="group flex items-center gap-2 px-3 py-1 rounded-full border border-[#40350A] text-[#40350A] hover:bg-[#40350A] hover:text-white transition-colors relative">
             <RiCopperCoinFill size={22} />
-            <span className="text-sm font-medium">100</span>
+            <span className="text-sm font-medium">{coin}</span>
 
             {/* Tooltip appears below with slight vertical space */}
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden w-72 rounded-md bg-white border border-[#40350A] px-3 py-2 text-sm text-[#40350A] shadow-md group-hover:block z-50">
-              This is Tara Coin — 20% of your order value will be credited as
+              This is Tara Coin — 5% of your order value will be credited as
               Tara Coins. Use them to reduce your future bills.
             </div>
           </button>
