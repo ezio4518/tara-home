@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
-  const { token, setToken, navigate, backendUrl } = useContext(ShopContext);
+  const { token, setToken, navigate, backendUrl, setCoin } =
+    useContext(ShopContext);
 
   const [name, setName] = useState("");
   const [password, setPasword] = useState("");
@@ -33,6 +34,7 @@ const Login = () => {
         });
         if (response.data.success) {
           setToken(response.data.token);
+          setCoin(response.data.coin); // 👈 Add this
           localStorage.setItem("token", response.data.token);
         } else {
           toast.error(response.data.message);

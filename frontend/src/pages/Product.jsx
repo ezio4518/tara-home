@@ -3,13 +3,13 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProduct from "../components/RelatedProduct";
+import { toast } from "react-toastify"; // <-- Add this import
 
 const Product = () => {
   const { productId } = useParams();
   const { products, currency, addToCart } = useContext(ShopContext);
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState("");
-  const [size, setSize] = useState("");
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -24,6 +24,12 @@ const Product = () => {
   useEffect(() => {
     fetchProductData();
   }, [productId, products]);
+
+  // Handler to add product and show toast
+  const handleAddToCart = (id) => {
+    addToCart(id);
+    toast.success("Product added to cart!");
+  };
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
@@ -57,24 +63,9 @@ const Product = () => {
           <p className="mt-5 text-[#A1876F] md:w-4/5">
             {productData.description}
           </p>
-          <div className="flex flex-col gap-4 my-8">
-            <p>Select Size</p>
-            <div className="flex gap-2">
-              {productData.sizes.map((item, index) => (
-                <button
-                  onClick={() => setSize(item)}
-                  className={`border py-2 px-4 bg-gray-100 ${
-                    item === size ? "border-orange-500" : ""
-                  }`}
-                  key={index}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Removed size selection */}
           <button
-            onClick={() => addToCart(productData._id, size)}
+            onClick={() => handleAddToCart(productData._id)}
             className="bg-[#40350A] text-[#F0E1C6] px-8 py-3 text-sm active:bg-[#2e2607] cursor-pointer"
           >
             ADD TO CART

@@ -17,6 +17,8 @@ const PlaceOrder = () => {
     getCartAmount,
     delivery_fee,
     products,
+    coin,
+    getUserInfo
   } = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -72,17 +74,14 @@ const PlaceOrder = () => {
     try {
       let orderItems = [];
 
-      for (const items in cartItems) {
-        for (const item in cartItems[items]) {
-          if (cartItems[items][item] > 0) {
-            const itemInfo = structuredClone(
-              products.find((product) => product._id === items)
-            );
-            if (itemInfo) {
-              itemInfo.size = item;
-              itemInfo.quantity = cartItems[items][item];
-              orderItems.push(itemInfo);
-            }
+      for (const itemId in cartItems) {
+        if (cartItems[itemId] > 0) {
+          const itemInfo = structuredClone(
+            products.find((product) => product._id === itemId)
+          );
+          if (itemInfo) {
+            itemInfo.quantity = cartItems[itemId];
+            orderItems.push(itemInfo);
           }
         }
       }
@@ -90,7 +89,7 @@ const PlaceOrder = () => {
       let orderData = {
         address: formData,
         items: orderItems,
-        amount: getCartAmount() + delivery_fee,
+        amount: getCartAmount() + delivery_fee - coin,
       };
 
       switch (method) {
@@ -103,6 +102,7 @@ const PlaceOrder = () => {
           );
           if (response.data.success) {
             setCartItems({});
+            await getUserInfo(token); 
             navigate("/orders");
           } else {
             toast.error(response.data.message);
@@ -294,7 +294,7 @@ const PlaceOrder = () => {
           <div className="w-full text-end mt-8">
             <button
               type="submit"
-              className="bg-[#40350A] text-[#F0E1C6] px-16 py-3 text-sm"
+              className="bg-[#40350A] text-[#F0E1C6] px-16 py-3 text-sm cursor-pointer"
             >
               PLACE ORDER
             </button>

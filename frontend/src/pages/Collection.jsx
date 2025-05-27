@@ -13,8 +13,6 @@ const Collection = () => {
   const [sortType, setSortType] = useState("relavent");
 
   const toggleCategory = (e) => {
-    //agr category me wo item hai to usko hata do warna add kar do
-    //e.target.value se wo value mil jaegi jo checkbox me hai
     if (category.includes(e.target.value)) {
       setCategory((prev) => prev.filter((item) => item !== e.target.value));
     } else {
@@ -78,6 +76,7 @@ const Collection = () => {
 
   useEffect(() => {
     sortProduct();
+    // eslint-disable-next-line
   }, [sortType]);
 
   return (
@@ -192,7 +191,7 @@ const Collection = () => {
       <div className="flex-1">
         <div className="flex justify-between text-base sm:text-2xl mb-4">
           <Title text1={"ALL"} text2={"COLLECTIONS"} />
-          {/* Porduct Sort */}
+          {/* Product Sort */}
           <select
             onChange={(e) => setSortType(e.target.value)}
             className="border-2 border-[#A1876F] text-sm px-2 text-[#40350A]"

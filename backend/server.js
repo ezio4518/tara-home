@@ -7,6 +7,9 @@ import userRouter from './routes/userRoute.js'
 import productRouter from './routes/productRoute.js'
 import cartRouter from './routes/cartRoute.js'
 import orderRouter from './routes/orderRoute.js'
+import analyticsRouter from './routes/analyticsRoute.js'
+import "./utils/orderEmailCron.js"; // Must be after DB connection setup
+
 
 // App Config
 const app = express()
@@ -23,6 +26,7 @@ app.use('/api/user',userRouter)
 app.use('/api/product',productRouter)
 app.use('/api/cart',cartRouter)
 app.use('/api/order',orderRouter)
+app.use('/api/analytics',analyticsRouter)
 
 app.get('/',(req,res)=>{
     res.send("API Working")

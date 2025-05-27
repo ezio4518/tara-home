@@ -8,7 +8,8 @@ const orderSchema = new mongoose.Schema({
     status: { type: String, required: true, default:'Order Placed' },
     paymentMethod: { type: String, required: true },
     payment: { type: Boolean, required: true , default: false },
-    date: {type: Number, required:true}
+    date: {type: Number, required:true},
+    createdAt: { type: Date, default: Date.now }
 })
 
 const orderModel = mongoose.models.order || mongoose.model('order',orderSchema)
