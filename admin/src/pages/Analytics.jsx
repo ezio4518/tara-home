@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { MdAnalytics } from "react-icons/md";
 import {
   BarChart,
   Bar,
@@ -62,8 +63,9 @@ const Analytics = ({ token }) => {
 
   return (
     <div className="min-h-screen px-6 py-12 text-[#40350A]">
-      <h2 className="text-3xl font-bold mb-6 text-center">
-        📊 Analytics Dashboard
+      <h2 className="text-3xl font-bold mb-6 text-center flex items-center justify-center gap-2">
+        <MdAnalytics className="text-4xl text-[#40350A]" />
+        Analytics Dashboard
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
