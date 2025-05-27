@@ -6,7 +6,11 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true },
     coin: { type: Number, default: 50 },
     cartData: { type: Object, default: {} }
-}, { minimize: false })
+}, { 
+    minimize: false,
+    timestamps: true // adds createdAt and updatedAt automatically
+});
+
 
 const userModel = mongoose.models.user || mongoose.model('user',userSchema);
 
