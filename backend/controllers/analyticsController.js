@@ -46,7 +46,7 @@ const getTotalProducts = async (req, res) => {
 // Monthly Sales Trend
 const getMonthlySales = async (req, res) => {
   try {
-    const orders = await orderModel.find({ payment: true });
+    const orders = await orderModel.find();
     const revenueMap = {};
     orders.forEach(order => {
       const date = new Date(order.createdAt);

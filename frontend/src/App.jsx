@@ -15,6 +15,7 @@ import SearchBar from './components/SearchBar'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Verify from './pages/Verify'
+import FloatingChat from './components/FloatingChat'
 
 
 
@@ -36,6 +37,7 @@ const App = () => {
         <Route path='/orders' element={<Orders />} />
         <Route path='/verify' element={<Verify />} />
       </Routes>
+      <FloatingChat />
       <Footer />
     </div>
   )
