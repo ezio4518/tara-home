@@ -11,7 +11,5 @@ def format_product_to_document(product: dict) -> Document:
         Category: {product['category']}
         Subcategory: {product['subCategory']}
         Bestseller: {'Yes' if product['bestseller'] else 'No'}
-        Date: {product['date']}
-        Created At: {product['createdAt']}
     """
     return Document(page_content=content.strip(), metadata={"name": product["name"]})

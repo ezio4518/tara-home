@@ -24,15 +24,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def load_existing_products():
+    import json
+    if os.path.exists("data/products.json"):
+        with open("data/products.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
 # Load and split
-faq_path = "data/faq.txt"
 faq_docs = []
-if os.path.exists(faq_path):
-    raw_faq_docs = TextLoader(faq_path).load()
+if os.path.exists("data/faq.txt"):
+    raw_faq_docs = TextLoader("data/faq.txt").load()
     faq_docs = split_documents(raw_faq_docs)
 
-# Build vectorstore and retriever
-retriever, vectorstore = initialize_vectorstore(faq_docs)
+# Load existing products and convert to Documents
+product_docs = []
+existing_products = load_existing_products()
+if existing_products:
+    formatted_products = [format_product_to_document(p) for p in existing_products]
+    product_docs = split_documents(formatted_products)
+
+# FAQ + Products and build vectorstore
+all_docs = faq_docs + product_docs
+retriever, vectorstore = initialize_vectorstore(all_docs)
 
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
 qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)

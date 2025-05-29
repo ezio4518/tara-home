@@ -1,6 +1,9 @@
 import { v2 as cloudinary } from "cloudinary";
 import axios from "axios";
 import productModel from "../models/productModel.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // function for add product
 const addProduct = async (req, res) => {
@@ -45,7 +48,7 @@ const addProduct = async (req, res) => {
 
     // NEW: Notify AI backend with full product details (excluding image)
     try {
-      await axios.post("http://localhost:8000/update-product", {
+      await axios.post(process.env.AI_BACKEND_URL+"/update-product", {
         name: product.name,
         description: product.description,
         price: product.price,
