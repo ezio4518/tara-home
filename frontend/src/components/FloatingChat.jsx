@@ -9,17 +9,33 @@ const FloatingChat = () => {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!input.trim()) return;
-    setMessages((prev) => [...prev, { text: input, sender: "user" }]);
+
+    const userMsg = { text: input, sender: "user" };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
 
-    setTimeout(() => {
+    try {
+      const res = await fetch("http://localhost:8000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: input }),
+      });
+
+      const data = await res.json();
+      const botReply =
+        data.response?.result ||
+        data.response ||
+        "Sorry, I didn’t understand that.";
+
+      setMessages((prev) => [...prev, { text: botReply, sender: "bot" }]);
+    } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { text: "Thanks for your message!", sender: "bot" },
+        { text: "Server error. Please try again later.", sender: "bot" },
       ]);
-    }, 1000);
+    }
   };
 
   const handleKeyDown = (e) => {

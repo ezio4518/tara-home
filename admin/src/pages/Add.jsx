@@ -3,6 +3,7 @@ import { assets } from "../assets/assets";
 import axios from "axios";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
+import { ClipLoader } from "react-spinners";
 
 const Add = ({ token }) => {
   const [image1, setImage1] = useState(false);
@@ -17,12 +18,14 @@ const Add = ({ token }) => {
   const [subCategory, setSubCategory] = useState("Topwear");
   const [bestseller, setBestseller] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const formData = new FormData();
-
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", price);
@@ -55,8 +58,10 @@ const Add = ({ token }) => {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -68,61 +73,27 @@ const Add = ({ token }) => {
       <div>
         <p className="mb-2">Upload Image</p>
         <div className="flex gap-2">
-          <label htmlFor="image1">
-            <img
-              className="w-20"
-              src={!image1 ? assets.upload_area : URL.createObjectURL(image1)}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage1(e.target.files[0])}
-            type="file"
-            id="image1"
-            hidden
-          />
-
-          <label htmlFor="image2">
-            <img
-              className="w-20"
-              src={!image2 ? assets.upload_area : URL.createObjectURL(image2)}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage2(e.target.files[0])}
-            type="file"
-            id="image2"
-            hidden
-          />
-
-          <label htmlFor="image3">
-            <img
-              className="w-20"
-              src={!image3 ? assets.upload_area : URL.createObjectURL(image3)}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage3(e.target.files[0])}
-            type="file"
-            id="image3"
-            hidden
-          />
-
-          <label htmlFor="image4">
-            <img
-              className="w-20"
-              src={!image4 ? assets.upload_area : URL.createObjectURL(image4)}
-              alt=""
-            />
-          </label>
-          <input
-            onChange={(e) => setImage4(e.target.files[0])}
-            type="file"
-            id="image4"
-            hidden
-          />
+          {[1, 2, 3, 4].map((i) => {
+            const image = eval("image" + i);
+            const setImage = eval("setImage" + i);
+            return (
+              <div key={i}>
+                <label htmlFor={`image${i}`}>
+                  <img
+                    className="w-20"
+                    src={!image ? assets.upload_area : URL.createObjectURL(image)}
+                    alt=""
+                  />
+                </label>
+                <input
+                  onChange={(e) => setImage(e.target.files[0])}
+                  type="file"
+                  id={`image${i}`}
+                  hidden
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -156,6 +127,7 @@ const Add = ({ token }) => {
           <p className="mb-2">Product category</p>
           <select
             onChange={(e) => setCategory(e.target.value)}
+            value={category}
             className="w-full px-3 py-2 border"
             style={{ borderColor: "#A1876F", color: "#A1876F" }}
           >
@@ -169,6 +141,7 @@ const Add = ({ token }) => {
           <p className="mb-2">Sub category</p>
           <select
             onChange={(e) => setSubCategory(e.target.value)}
+            value={subCategory}
             className="w-full px-3 py-2 border"
             style={{ borderColor: "#A1876F", color: "#A1876F" }}
           >
@@ -187,11 +160,10 @@ const Add = ({ token }) => {
             style={{ borderColor: "#A1876F", color: "#A1876F" }}
             type="number"
             placeholder="25"
+            required
           />
         </div>
       </div>
-
-      {/* Removed Product Sizes section */}
 
       <div className="flex gap-2 mt-2">
         <input
@@ -207,10 +179,11 @@ const Add = ({ token }) => {
 
       <button
         type="submit"
-        className="w-28 py-3 mt-4"
+        disabled={loading}
+        className="w-28 py-3 mt-4 flex justify-center items-center gap-2"
         style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
       >
-        ADD
+        {loading ? <ClipLoader size={20} color="#F0E1C6" /> : "ADD"}
       </button>
     </form>
   );
