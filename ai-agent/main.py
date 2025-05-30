@@ -74,7 +74,7 @@ def chat(query: Query):
     except Exception as e:
         return {"error": str(e)}
 
-# /update-product endpoint
+# update-product endpoint
 @app.post("/update-product")
 def update_product(product: Product):
     doc = format_product_to_document(product.dict())

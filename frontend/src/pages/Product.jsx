@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProduct from "../components/RelatedProduct";
-import { toast } from "react-toastify"; // <-- Add this import
+import { toast } from "react-toastify"; 
 
 const Product = () => {
   const { productId } = useParams();
@@ -28,7 +28,7 @@ const Product = () => {
   // Handler to add product and show toast
   const handleAddToCart = (id) => {
     addToCart(id);
-    toast.success("Product added to cart!");
+    toast.success("Product added to cart!", { autoClose: 1000, hideProgressBar : true });
   };
 
   return productData ? (

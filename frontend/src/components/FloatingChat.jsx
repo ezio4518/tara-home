@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
+import PulseLoader from "react-spinners/PulseLoader"; // <-- Import SyncLoader
 
 const FloatingChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -7,6 +8,7 @@ const FloatingChat = () => {
     { text: "Hello! How can I help you today?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false); // <-- loading state
   const messagesEndRef = useRef(null);
 
   const sendMessage = async () => {
@@ -15,9 +17,10 @@ const FloatingChat = () => {
     const userMsg = { text: input, sender: "user" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setLoading(true); // <-- start loading
 
     try {
-      const res = await fetch(import.meta.env.VITE_AI_BACKEND_URL+"/chat", {
+      const res = await fetch(import.meta.env.VITE_AI_BACKEND_URL + "/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: input }),
@@ -35,6 +38,8 @@ const FloatingChat = () => {
         ...prev,
         { text: "Server error. Please try again later.", sender: "bot" },
       ]);
+    } finally {
+      setLoading(false); // <-- stop loading
     }
   };
 
@@ -44,7 +49,7 @@ const FloatingChat = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, loading]);
 
   return (
     <>
@@ -78,6 +83,16 @@ const FloatingChat = () => {
                 {msg.text}
               </div>
             ))}
+
+            {/* SyncLoader when bot is typing */}
+            {loading && (
+              <div className="mr-auto">
+                <div className="bg-[#F5F2EF] text-[#40350A] rounded-lg px-3 py-2 inline-block">
+                  <PulseLoader size={8} color="#40350A" speedMultiplier={0.7} />
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
