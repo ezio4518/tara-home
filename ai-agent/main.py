@@ -10,7 +10,9 @@ from langchain.schema import Document
 from langchain_community.document_loaders import TextLoader
 from utils.formatter import format_product_to_document
 from utils.retriever import initialize_vectorstore
+import uvicorn
 
+# Load environment variables
 load_dotenv()
 os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
@@ -31,27 +33,27 @@ def load_existing_products():
             return json.load(f)
     return []
 
-# Load and split
+# Load and split documents
 faq_docs = []
 if os.path.exists("data/faq.txt"):
     raw_faq_docs = TextLoader("data/faq.txt").load()
     faq_docs = split_documents(raw_faq_docs)
 
-# Load existing products and convert to Documents
 product_docs = []
 existing_products = load_existing_products()
 if existing_products:
     formatted_products = [format_product_to_document(p) for p in existing_products]
     product_docs = split_documents(formatted_products)
 
-# FAQ + Products and build vectorstore
+# Combine docs and initialize vector store
 all_docs = faq_docs + product_docs
 retriever, vectorstore = initialize_vectorstore(all_docs)
 
+# Initialize LLM + QA chain
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.2)
 qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
-# Define request models
+# Request models
 class Query(BaseModel):
     question: str
 
@@ -69,7 +71,6 @@ class Product(BaseModel):
 async def root():
     return {"message": "AI agent is running"}
 
-# /chat endpoint
 @app.post("/chat")
 async def chat(query: Query):
     try:
@@ -78,7 +79,6 @@ async def chat(query: Query):
     except Exception as e:
         return {"error": str(e)}
 
-# update-product endpoint
 @app.post("/update-product")
 async def update_product(product: Product):
     doc = format_product_to_document(product.dict())
@@ -90,3 +90,8 @@ async def update_product(product: Product):
     qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
     return {"status": "Product added to vector store"}
+
+# 👇 Ensure uvicorn uses correct host and port when running on Render
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
