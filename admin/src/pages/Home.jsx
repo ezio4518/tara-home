@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { backendUrl } from "../App";
-import Product from "../../../frontend/src/pages/Product";
-import Add from "./Add";
 
 const Home = ({ token }) => {
   const exportOrdersToExcel = async () => {
