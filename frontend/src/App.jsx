@@ -22,6 +22,7 @@ import FloatingChat from './components/FloatingChat'
 const App = () => {
   return (
     <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] '>
+      
       <Navbar /> {/*routes ke bahar likh rhe so Navbar har page me dikhe always visible */}
       <SearchBar />
       <Routes> {/* <Routes> to create multiple route inside it */}

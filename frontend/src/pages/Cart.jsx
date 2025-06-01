@@ -3,6 +3,7 @@ import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { assets } from "../assets/assets";
 import CartTotal from "../components/CartTotal";
+import { toast } from "react-toastify";
 
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate } =
@@ -65,10 +66,7 @@ const Cart = () => {
                 onChange={(e) =>
                   e.target.value === "" || e.target.value === "0"
                     ? null
-                    : updateQuantity(
-                        item._id,
-                        Number(e.target.value)
-                      )
+                    : updateQuantity(item._id, Number(e.target.value))
                 }
                 className="border max-w-10 sm:max-w-20 px-1 sm:px-2 py-1"
                 type="number"
@@ -91,7 +89,16 @@ const Cart = () => {
           <CartTotal />
           <div className="w-full text-end">
             <button
-              onClick={() => navigate("/place-order")}
+              onClick={() => {
+                if (cartData.length > 0) {
+                  navigate("/place-order");
+                } else {
+                  toast.warning("Your cart is empty!", {
+                    position: "top-right",
+                    autoClose: 2000,
+                  });
+                }
+              }}
               className="text-sm my-8 px-8 py-3"
               style={{
                 backgroundColor: "#40350A",
