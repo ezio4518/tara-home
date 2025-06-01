@@ -3,7 +3,8 @@ import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { assets } from "../assets/assets";
 import CartTotal from "../components/CartTotal";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Cart = () => {
   const { products, currency, cartItems, updateQuantity, navigate } =
@@ -28,6 +29,7 @@ const Cart = () => {
 
   return (
     <div className="border-t pt-14">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className=" text-2xl mb-3">
         <Title text1={"YOUR"} text2={"CART"} />
       </div>
