@@ -10,11 +10,4 @@ chromadb
 sentence-transformers
 tf-keras
 
-# Optional for local file loading (used for faq.txt)
-tqdm
 # uvicorn main:app --reload --port 8000
-# Invoke-WebRequest -Uri "http://localhost:8000/chat" `
-#   -Method POST `
-#   -Headers @{ "Content-Type" = "application/json" } `
-#   -Body '{ "question": "What is your return policy?" }'
-# curl -X POST http://localhost:8000/chat -H "Content-Type: application/json" -d '{"question":"What is your return policy?"}'

@@ -65,9 +65,13 @@ class Product(BaseModel):
     date: int
     createdAt: str
 
+@app.get("/")
+async def root():
+    return {"message": "AI agent is running"}
+
 # /chat endpoint
 @app.post("/chat")
-def chat(query: Query):
+async def chat(query: Query):
     try:
         response = qa_chain.invoke(query.question)
         return {"response": response}
@@ -76,7 +80,7 @@ def chat(query: Query):
 
 # update-product endpoint
 @app.post("/update-product")
-def update_product(product: Product):
+async def update_product(product: Product):
     doc = format_product_to_document(product.dict())
     split_docs = split_documents([doc])
     vectorstore.add_documents(split_docs)
