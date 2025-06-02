@@ -43,16 +43,12 @@ const loadProductDocs = async (path) => {
 // 4. Main embedding function
 export const embedAndStoreAll = async () => {
   const faqDocs = await new TextLoader("./data/faq.txt").load();
-  log(`✅ Loaded ${faqDocs.length} FAQ documents`);
 
   const productDocs = await loadProductDocs("./data/products.json");
-  log(`✅ Loaded ${productDocs.length} full product documents`);
 
   const allDocs = [...faqDocs, ...productDocs];
-  log(`✅ Combined total of ${allDocs.length} documents`);
 
   const splitDocs = await splitter.splitDocuments(allDocs);
-  log(`✅ Split into ${splitDocs.length} chunks`);
 
   const client = new MongoClient(process.env.MONGODB_URI);
   await client.connect();
@@ -60,7 +56,6 @@ export const embedAndStoreAll = async () => {
     .db(process.env.MONGODB_DB)
     .collection(process.env.MONGODB_COLLECTION);
 
-  log("🔄 Embedding and storing into MongoDB Atlas...");
   await MongoDBAtlasVectorSearch.fromDocuments(splitDocs, embeddings, {
     collection,
     indexName: "default",

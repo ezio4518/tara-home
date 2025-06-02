@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
       .db(process.env.MONGODB_DB)
       .collection(process.env.MONGODB_COLLECTION);
 
-    // 2. Set up Embeddings (can also use OpenAIEmbeddings here)
+    // 2. Set up Embeddings
     const embeddings = new HuggingFaceTransformersEmbeddings({
       model: "Xenova/all-MiniLM-L6-v2",
     });
