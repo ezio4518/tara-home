@@ -91,7 +91,6 @@ async def update_product(product: Product):
 
     return {"status": "Product added to vector store"}
 
-# 👇 Ensure uvicorn uses correct host and port when running on Render
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

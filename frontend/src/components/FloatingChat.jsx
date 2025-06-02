@@ -20,17 +20,17 @@ const FloatingChat = () => {
     setLoading(true); // <-- start loading
 
     try {
-      const res = await fetch(import.meta.env.VITE_AI_BACKEND_URL + "/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: input }),
-      });
+      const res = await fetch(
+        import.meta.env.VITE_AI_BACKEND_URL + "/api/chat",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: input }),
+        }
+      );
 
       const data = await res.json();
-      const botReply =
-        data.response?.result ||
-        data.response ||
-        "Sorry, I didn’t understand that.";
+      const botReply = data.answer || "Sorry, I didn’t understand that.";
 
       setMessages((prev) => [...prev, { text: botReply, sender: "bot" }]);
     } catch (error) {

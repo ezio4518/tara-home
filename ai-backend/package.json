@@ -1,0 +1,30 @@
+{
+  "name": "ai-backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "server": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@huggingface/transformers": "^3.5.2",
+    "@langchain/community": "^0.3.45",
+    "@langchain/core": "^0.3.57",
+    "@langchain/google-genai": "^0.2.10",
+    "@langchain/mongodb": "^0.1.0",
+    "axios": "^1.9.0",
+    "body-parser": "^2.2.0",
+    "chromadb": "^2.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "langchain": "^0.3.27",
+    "mongodb": "^6.16.0",
+    "nodemon": "^3.1.10"
+  }
+}
