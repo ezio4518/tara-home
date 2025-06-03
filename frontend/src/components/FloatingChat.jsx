@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
-import PulseLoader from "react-spinners/PulseLoader"; // <-- Import SyncLoader
+import PulseLoader from "react-spinners/PulseLoader";
 
 const FloatingChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -8,16 +8,16 @@ const FloatingChat = () => {
     { text: "Hello! How can I help you today?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
-  const [loading, setLoading] = useState(false); // <-- loading state
+  const [loading, setLoading] = useState(false);
+  const chatRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
-
     const userMsg = { text: input, sender: "user" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
-    setLoading(true); // <-- start loading
+    setLoading(true);
 
     try {
       const res = await fetch(
@@ -28,10 +28,8 @@ const FloatingChat = () => {
           body: JSON.stringify({ question: input }),
         }
       );
-
       const data = await res.json();
       const botReply = data.answer || "Sorry, I didn’t understand that.";
-
       setMessages((prev) => [...prev, { text: botReply, sender: "bot" }]);
     } catch (error) {
       setMessages((prev) => [
@@ -39,7 +37,7 @@ const FloatingChat = () => {
         { text: "Server error. Please try again later.", sender: "bot" },
       ]);
     } finally {
-      setLoading(false); // <-- stop loading
+      setLoading(false);
     }
   };
 
@@ -51,16 +49,31 @@ const FloatingChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        chatRef.current &&
+        !chatRef.current.contains(e.target) &&
+        !e.target.closest("#floating-chat-toggle")
+      ) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
   return (
     <>
-      {/* Chat Box */}
       {isOpen && (
-        <div className="fixed bottom-28 right-8 w-[420px] h-[500px] bg-white shadow-xl border border-[#A1876F] rounded-xl p-4 z-50 flex flex-col">
-          {/* Header */}
+        <div
+          ref={chatRef}
+          className="fixed bottom-28 right-8 w-[420px] h-[500px] bg-white shadow-xl border border-[#A1876F] rounded-xl p-4 z-50 flex flex-col"
+        >
           <div className="flex justify-between items-center mb-3">
-            <h2 className="text-lg font-bold" style={{ color: "#40350A" }}>
-              AiChat Support
-            </h2>
+            <h2 className="text-lg font-bold text-[#40350A]">AiChat Support</h2>
             <button
               onClick={() => setIsOpen(false)}
               className="text-2xl text-[#A1876F] hover:text-[#40350A]"
@@ -69,7 +82,6 @@ const FloatingChat = () => {
             </button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto mb-3 space-y-2 pr-1">
             {messages.map((msg, index) => (
               <div
@@ -83,8 +95,6 @@ const FloatingChat = () => {
                 {msg.text}
               </div>
             ))}
-
-            {/* SyncLoader when bot is typing */}
             {loading && (
               <div className="mr-auto">
                 <div className="bg-[#F5F2EF] text-[#40350A] rounded-lg px-3 py-2 inline-block">
@@ -92,11 +102,9 @@ const FloatingChat = () => {
                 </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Box */}
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -116,10 +124,11 @@ const FloatingChat = () => {
         </div>
       )}
 
-      {/* Floating Button */}
+      {/* Floating Toggle Button */}
       <button
+        id="floating-chat-toggle"
         className="fixed bottom-6 right-6 bg-[#40350A] text-white p-5 rounded-full shadow-xl z-50 hover:bg-[#5a4812] transition"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-label="Toggle chat"
       >
         <IoChatboxEllipsesOutline size={34} />

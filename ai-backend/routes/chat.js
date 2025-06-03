@@ -5,12 +5,14 @@ import { MongoClient } from "mongodb";
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers"; // or OpenAIEmbeddings
 import "dotenv/config";
 
+
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { question } = req.body;
   if (!question) return res.status(400).json({ error: "Missing question" });
-
+  console.log("User Question:", question);
+  
   try {
     // 1. Connect to MongoDB Atlas
     const client = new MongoClient(process.env.MONGODB_URI);
@@ -20,10 +22,14 @@ router.post("/", async (req, res) => {
       .db(process.env.MONGODB_DB)
       .collection(process.env.MONGODB_COLLECTION);
 
+    console.log("Connected to MongoDB Atlas");
+
     // 2. Set up Embeddings
     const embeddings = new HuggingFaceTransformersEmbeddings({
       model: "Xenova/all-MiniLM-L6-v2",
     });
+
+    console.log("Embeddings initialized");
 
     // 3. Setup MongoDB Atlas Vector Store (NEW CONFIG)
     const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
@@ -33,9 +39,14 @@ router.post("/", async (req, res) => {
       embeddingKey: "embedding", // field name for embeddings
     });
 
+    console.log("Vector store initialized");
+
     // 4. Search top matches
     const results = await vectorStore.similaritySearch(question, 4);
     const context = results.map((doc) => doc.pageContent).join("\n\n");
+
+    console.log("Context retrieved from vector store");
+
     // 5. Gemini LLM via LangChain
     const llm = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY,

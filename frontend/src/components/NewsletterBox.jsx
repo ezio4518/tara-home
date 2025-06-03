@@ -59,3 +59,6 @@ const NewsletterBox = () => {
 };
 
 export default NewsletterBox;
+
+
+// hidden sm:block
