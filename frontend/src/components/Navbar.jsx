@@ -11,7 +11,6 @@ const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showCoinInfo, setShowCoinInfo] = useState(false);
-
   const popupRef = useRef(null);
   const menuIconRef = useRef(null);
 
@@ -30,6 +29,7 @@ const Navbar = () => {
     localStorage.removeItem("token");
     setToken("");
     setCartItems({});
+    setShowProfileMenu(false);
   };
 
   useEffect(() => {
@@ -50,29 +50,21 @@ const Navbar = () => {
   }, []);
 
   return (
-    <div className="flex items-center justify-between py-5 font-medium relative">
+    <div className="flex items-center justify-between py-5 gap-4.5 font-medium relative">
       <Link to="/">
         <img src={assets.logo} className="w-44" alt="logo" />
       </Link>
 
       {/* Desktop Nav */}
       <ul className="hidden sm:flex gap-5 text-sm" style={{ color: "#40350A" }}>
-        <NavLink to="/" className="flex flex-col items-center gap-1">
-          <p>HOME</p>
-        </NavLink>
-        <NavLink to="/collection" className="flex flex-col items-center gap-1">
-          <p>COLLECTION</p>
-        </NavLink>
-        <NavLink to="/about" className="flex flex-col items-center gap-1">
-          <p>ABOUT</p>
-        </NavLink>
-        <NavLink to="/contact" className="flex flex-col items-center gap-1">
-          <p>CONTACT</p>
-        </NavLink>
+        <NavLink to="/" className="flex flex-col items-center gap-1"><p>HOME</p></NavLink>
+        <NavLink to="/collection" className="flex flex-col items-center gap-1"><p>COLLECTION</p></NavLink>
+        <NavLink to="/about" className="flex flex-col items-center gap-1"><p>ABOUT</p></NavLink>
+        <NavLink to="/contact" className="flex flex-col items-center gap-1"><p>CONTACT</p></NavLink>
       </ul>
 
       {/* Right Icons */}
-      <div className="flex items-center gap-3.5 sm:gap-6">
+      <div className="flex items-center gap-2.5 sm:gap-6">
         {/* Tara Coin */}
         <div
           className="relative inline-block"
@@ -88,8 +80,7 @@ const Navbar = () => {
           </button>
           {showCoinInfo && (
             <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 rounded-md bg-white border border-[#40350A] px-3 py-2 text-sm text-[#40350A] shadow-md z-50">
-              This is Tara Coin — 5% of your order value will be credited as
-              Tara Coins. Use them to reduce your future bills.
+              This is Tara Coin — 5% of your order value will be credited as Tara Coins. Use them to reduce your future bills.
             </div>
           )}
         </div>
@@ -106,7 +97,7 @@ const Navbar = () => {
         />
 
         {/* Desktop Profile */}
-        <div className="relative hidden sm:block">
+        <div ref={popupRef} className="relative hidden sm:block">
           <FaUserCircle
             onClick={() =>
               token ? setShowProfileMenu((prev) => !prev) : navigate("/login")
@@ -118,19 +109,15 @@ const Navbar = () => {
           {token && showProfileMenu && (
             <div className="absolute right-0 pt-4 z-40">
               <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 rounded text-[#A1876F]">
-                <p className="cursor-pointer hover:text-[#40350A]">My Profile</p>
-                <p
-                  onClick={() => navigate("/orders")}
-                  className="cursor-pointer hover:text-[#40350A]"
-                >
-                  Orders
-                </p>
-                <p
-                  onClick={logout}
-                  className="cursor-pointer hover:text-[#40350A]"
-                >
-                  Logout
-                </p>
+                <p onClick={() => {
+                  navigate("/profile");
+                  setShowProfileMenu(false);
+                }} className="cursor-pointer hover:text-[#40350A]">My Profile</p>
+                <p onClick={() => {
+                  navigate("/orders");
+                  setShowProfileMenu(false);
+                }} className="cursor-pointer hover:text-[#40350A]">Orders</p>
+                <p onClick={logout} className="cursor-pointer hover:text-[#40350A]">Logout</p>
               </div>
             </div>
           )}
@@ -157,7 +144,7 @@ const Navbar = () => {
         />
       </div>
 
-      {/* Floating Sidebar Menu */}
+      {/* Mobile Menu */}
       {visible && (
         <div
           ref={popupRef}
@@ -193,7 +180,24 @@ const Navbar = () => {
             );
           })}
 
-          {/* Profile Logic in Mobile */}
+          {/* Show Login if user is not logged in */}
+          {!token && (
+            <NavLink
+              to="/login"
+              onClick={() => setVisible(false)}
+              className={({ isActive }) =>
+                `py-2 px-2 rounded transition-all duration-200 ${
+                  isActive
+                    ? "bg-[#40350A] text-white"
+                    : "text-[#40350A] hover:bg-[#F5F2EF]"
+                }`
+              }
+            >
+              LOGIN
+            </NavLink>
+          )}
+
+          {/* Mobile Profile Dropdown */}
           {token && (
             <div className="mt-1">
               <p
@@ -207,7 +211,10 @@ const Navbar = () => {
                 <div className="flex flex-col ml-4 mt-1 text-sm text-[#40350A] bg-[#FAF8F6] rounded-lg shadow border border-[#E1D6C9]">
                   <NavLink
                     to="/profile"
-                    onClick={() => setVisible(false)}
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setVisible(false);
+                    }}
                     className={({ isActive }) =>
                       `py-2 px-3 rounded transition-all duration-200 ${
                         isActive
@@ -220,7 +227,10 @@ const Navbar = () => {
                   </NavLink>
                   <NavLink
                     to="/orders"
-                    onClick={() => setVisible(false)}
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setVisible(false);
+                    }}
                     className={({ isActive }) =>
                       `py-2 px-3 rounded transition-all duration-200 ${
                         isActive

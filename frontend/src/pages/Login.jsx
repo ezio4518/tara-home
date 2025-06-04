@@ -5,22 +5,31 @@ import { toast } from "react-toastify";
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
-  const { token, setToken, navigate, backendUrl, setCoin } =
-    useContext(ShopContext);
+  const { token, setToken, navigate, backendUrl, setCoin } = useContext(ShopContext);
 
   const [name, setName] = useState("");
-  const [password, setPasword] = useState("");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [identifier, setIdentifier] = useState(""); // For login: email or phone
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+
     try {
       if (currentState === "Sign Up") {
+        if (!email && !phone) {
+          toast.error("Please provide at least Email or Phone number.");
+          return;
+        }
+
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
+          phone,
           password,
         });
+
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
@@ -28,13 +37,22 @@ const Login = () => {
           toast.error(response.data.message);
         }
       } else {
-        const response = await axios.post(backendUrl + "/api/user/login", {
-          email,
+        if (!identifier) {
+          toast.error("Please enter your Email or Phone number.");
+          return;
+        }
+
+        const isEmail = identifier.includes("@");
+        const loginPayload = {
           password,
-        });
+          ...(isEmail ? { email: identifier } : { phone: identifier }),
+        };
+
+        const response = await axios.post(backendUrl + "/api/user/login", loginPayload);
+
         if (response.data.success) {
           setToken(response.data.token);
-          setCoin(response.data.coin); // 👈 Add this
+          setCoin(response.data.coin);
           localStorage.setItem("token", response.data.token);
         } else {
           toast.error(response.data.message);
@@ -47,9 +65,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (token) {
-      navigate("/");
-    }
+    if (token) navigate("/");
   }, [token]);
 
   return (
@@ -62,28 +78,53 @@ const Login = () => {
         <hr className="border-none h-[1.5px] w-8 bg-[#40350A]" />
       </div>
 
+      {/* Name (only for Sign Up) */}
       {currentState === "Sign Up" && (
         <input
           onChange={(e) => setName(e.target.value)}
           value={name}
           type="text"
           className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
-          placeholder="Name"
+          placeholder="Full Name"
           required
         />
       )}
 
-      <input
-        onChange={(e) => setEmail(e.target.value)}
-        value={email}
-        type="email"
-        className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
-        placeholder="Email"
-        required
-      />
+      {/* Login: Email or Phone input (single field) */}
+      {currentState === "Login" && (
+        <input
+          onChange={(e) => setIdentifier(e.target.value)}
+          value={identifier}
+          type="text"
+          className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
+          placeholder="Email or Phone"
+          required
+        />
+      )}
 
+      {/* Sign Up: Separate Email and Phone inputs (at least one required) */}
+      {currentState === "Sign Up" && (
+        <>
+          <input
+            onChange={(e) => setEmail(e.target.value)}
+            value={email}
+            type="email"
+            className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
+            placeholder="Email (optional)"
+          />
+          <input
+            onChange={(e) => setPhone(e.target.value)}
+            value={phone}
+            type="tel"
+            className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
+            placeholder="Phone (optional)"
+          />
+        </>
+      )}
+
+      {/* Password (common) */}
       <input
-        onChange={(e) => setPasword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         value={password}
         type="password"
         className="w-full px-3 py-2 border border-[#A1876F] text-[#A1876F]"
@@ -96,17 +137,11 @@ const Login = () => {
           <p className="cursor-pointer">Forgot your password?</p>
         )}
         {currentState === "Login" ? (
-          <p
-            onClick={() => setCurrentState("Sign Up")}
-            className="cursor-pointer"
-          >
+          <p onClick={() => setCurrentState("Sign Up")} className="cursor-pointer">
             Create account
           </p>
         ) : (
-          <p
-            onClick={() => setCurrentState("Login")}
-            className="cursor-pointer"
-          >
+          <p onClick={() => setCurrentState("Login")} className="cursor-pointer">
             Login Here
           </p>
         )}
@@ -120,3 +155,4 @@ const Login = () => {
 };
 
 export default Login;
+// mdzafar10011965
