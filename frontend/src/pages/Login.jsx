@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import axios from "axios";
 import { toast } from "react-toastify";
+import ClipLoader from "react-spinners/ClipLoader"; // Spinner
 
 const Login = () => {
   const [currentState, setCurrentState] = useState("Login");
@@ -11,25 +12,26 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [identifier, setIdentifier] = useState(""); // For login: email or phone
+  const [identifier, setIdentifier] = useState("");
+  const [loading, setLoading] = useState(false); // Loader state
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+    setLoading(true); // Show loader
 
     try {
       if (currentState === "Sign Up") {
         if (!email && !phone) {
           toast.error("Please provide at least Email or Phone number.");
+          setLoading(false);
           return;
         }
-
         const response = await axios.post(backendUrl + "/api/user/register", {
           name,
           email,
           phone,
           password,
         });
-
         if (response.data.success) {
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
@@ -39,17 +41,15 @@ const Login = () => {
       } else {
         if (!identifier) {
           toast.error("Please enter your Email or Phone number.");
+          setLoading(false);
           return;
         }
-
         const isEmail = identifier.includes("@");
         const loginPayload = {
           password,
           ...(isEmail ? { email: identifier } : { phone: identifier }),
         };
-
         const response = await axios.post(backendUrl + "/api/user/login", loginPayload);
-
         if (response.data.success) {
           setToken(response.data.token);
           setCoin(response.data.coin);
@@ -61,6 +61,8 @@ const Login = () => {
     } catch (error) {
       console.log(error);
       toast.error(error.message);
+    } finally {
+      setLoading(false); // Hide loader
     }
   };
 
@@ -78,7 +80,6 @@ const Login = () => {
         <hr className="border-none h-[1.5px] w-8 bg-[#40350A]" />
       </div>
 
-      {/* Name (only for Sign Up) */}
       {currentState === "Sign Up" && (
         <input
           onChange={(e) => setName(e.target.value)}
@@ -90,7 +91,6 @@ const Login = () => {
         />
       )}
 
-      {/* Login: Email or Phone input (single field) */}
       {currentState === "Login" && (
         <input
           onChange={(e) => setIdentifier(e.target.value)}
@@ -102,7 +102,6 @@ const Login = () => {
         />
       )}
 
-      {/* Sign Up: Separate Email and Phone inputs (at least one required) */}
       {currentState === "Sign Up" && (
         <>
           <input
@@ -122,7 +121,6 @@ const Login = () => {
         </>
       )}
 
-      {/* Password (common) */}
       <input
         onChange={(e) => setPassword(e.target.value)}
         value={password}
@@ -133,9 +131,7 @@ const Login = () => {
       />
 
       <div className="w-full flex justify-between text-sm mt-[-8px] text-[#40350A]">
-        {currentState === "Login" && (
-          <p className="cursor-pointer">Forgot your password?</p>
-        )}
+        {currentState === "Login" && <p className="cursor-pointer">Forgot your password?</p>}
         {currentState === "Login" ? (
           <p onClick={() => setCurrentState("Sign Up")} className="cursor-pointer">
             Create account
@@ -147,12 +143,21 @@ const Login = () => {
         )}
       </div>
 
-      <button className="bg-[#40350A] text-[#F0E1C6] font-light px-8 py-2 mt-4 cursor-pointer">
-        {currentState === "Login" ? "Sign In" : "Sign Up"}
+      <button
+        type="submit"
+        disabled={loading}
+        className="bg-[#40350A] text-[#F0E1C6] font-light px-8 py-2 mt-4 flex justify-center items-center gap-2 cursor-pointer disabled:opacity-70"
+      >
+        {loading ? (
+          <>
+            <ClipLoader color="#F0E1C6" size={20} />
+          </>
+        ) : (
+          currentState === "Login" ? "Sign In" : "Sign Up"
+        )}
       </button>
     </form>
   );
 };
 
 export default Login;
-// mdzafar10011965

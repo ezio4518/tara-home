@@ -1,49 +1,67 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import Collection from './pages/Collection'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import Product from './pages/Product'
-import Cart from './pages/Cart'
-import Login from './pages/Login'
-import Profile from './pages/Profile'
-import PlaceOrder from './pages/PlaceOrder'
-import Orders from './pages/Orders'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import SearchBar from './components/SearchBar'
-import { ToastContainer} from 'react-toastify';
+import React, { useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import Collection from './pages/Collection';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Product from './pages/Product';
+import Cart from './pages/Cart';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import PlaceOrder from './pages/PlaceOrder';
+import Orders from './pages/Orders';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import SearchBar from './components/SearchBar';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Verify from './pages/Verify'
-import FloatingChat from './components/FloatingChat'
-
-
+import Verify from './pages/Verify';
+import FloatingChat from './components/FloatingChat';
 
 const App = () => {
+  useEffect(() => {
+    const wakeAiBackend = async (retries = 3) => {
+      const url = import.meta.env.VITE_AI_BACKEND_URL;
+
+      for (let i = 0; i < retries; i++) {
+        try {
+          await fetch(url);
+          console.log("✅ AI backend is awake");
+          break;
+        } catch (err) {
+          console.warn(`⏳ Retry ${i + 1} failed to wake AI backend...`);
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+        }
+      }
+    };
+
+    wakeAiBackend();
+  }, []);
+
   return (
-    <div className='px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw] '>
-      
-      <Navbar /> {/*routes ke bahar likh rhe so Navbar har page me dikhe always visible */}
+    <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
+      <Navbar />
       <SearchBar />
-      <Routes> {/* <Routes> to create multiple route inside it */}
-        <Route path='/' element={<Home />} />
-        <Route path='/collection' element={<Collection />} />
-        <Route path='/about' element={<About />} />
-        <Route path='/contact' element={<Contact />} />
-        <Route path='/product/:productId' element={<Product />} /> {/* :productId is a parameter so that particular product's page is opened*/}
-        <Route path='/cart' element={<Cart />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/profile' element={<Profile />} />
-        <Route path='/place-order' element={<PlaceOrder />} />
-        <Route path='/orders' element={<Orders />} />
-        <Route path='/verify' element={<Verify />} />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/collection" element={<Collection />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/product/:productId" element={<Product />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/place-order" element={<PlaceOrder />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/verify" element={<Verify />} />
       </Routes>
+
       <FloatingChat />
       <Footer />
       <ToastContainer />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
