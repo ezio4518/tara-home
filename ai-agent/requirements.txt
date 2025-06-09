@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+langchain
+langchain-google-genai
+langchain-community
+chromadb
+sentence-transformers
+tf-keras
+
+# uvicorn main:app --reload --port 8000

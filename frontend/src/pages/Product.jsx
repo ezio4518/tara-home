@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
-import { assets } from "../assets/assets";
 import RelatedProduct from "../components/RelatedProduct";
-import { toast } from "react-toastify"; // <-- Add this import
+import { FaCheckCircle } from "react-icons/fa";
 
 const Product = () => {
   const { productId } = useParams();
   const { products, currency, addToCart } = useContext(ShopContext);
   const [productData, setProductData] = useState(false);
   const [image, setImage] = useState("");
+  const [addedToCart, setAddedToCart] = useState(false);
 
   const fetchProductData = async () => {
     products.map((item) => {
@@ -25,17 +25,15 @@ const Product = () => {
     fetchProductData();
   }, [productId, products]);
 
-  // Handler to add product and show toast
   const handleAddToCart = (id) => {
     addToCart(id);
-    toast.success("Product added to cart!");
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 1000);
   };
 
   return productData ? (
     <div className="border-t-2 pt-10 transition-opacity ease-in duration-500 opacity-100">
-      {/*----------- Product Data-------------- */}
       <div className="flex gap-12 sm:gap-12 flex-col sm:flex-row">
-        {/*---------- Product Images------------- */}
         <div className="flex-1 flex flex-col-reverse gap-3 sm:flex-row">
           <div className="flex sm:flex-col overflow-x-auto sm:overflow-y-scroll justify-between sm:justify-normal sm:w-[18.7%] w-full">
             {productData.image.map((item, index) => (
@@ -53,7 +51,6 @@ const Product = () => {
           </div>
         </div>
 
-        {/* -------- Product Info ---------- */}
         <div className="flex-1 text-[#40350A]">
           <h1 className="font-medium text-2xl mt-2">{productData.name}</h1>
           <p className="mt-5 text-3xl font-medium">
@@ -63,13 +60,37 @@ const Product = () => {
           <p className="mt-5 text-[#A1876F] md:w-4/5">
             {productData.description}
           </p>
-          {/* Removed size selection */}
-          <button
-            onClick={() => handleAddToCart(productData._id)}
-            className="bg-[#40350A] text-[#F0E1C6] px-8 py-3 text-sm active:bg-[#2e2607] cursor-pointer"
-          >
-            ADD TO CART
-          </button>
+
+          {/* Button and separate inline tick popup container */}
+          <div className="flex items-center gap-4 mt-4">
+            <button
+              onClick={() => handleAddToCart(productData._id)}
+              className="bg-[#40350A] text-[#F0E1C6] px-8 py-3 text-sm active:bg-[#2e2607] cursor-pointer"
+            >
+              ADD TO CART
+            </button>
+
+            {addedToCart && (
+              <span
+                style={{
+                  backgroundColor: "#FFFFFF",
+                  border: "1.5px solid #40350A",
+                  color: "#40350A",
+                  padding: "4px 12px",
+                  borderRadius: "9999px",
+                  fontWeight: "500",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "0.9rem",
+                  userSelect: "none",
+                }}
+              >
+                <FaCheckCircle />
+                Product added
+              </span>
+            )}
+          </div>
 
           <hr className="mt-8 sm:w-4/5" />
           <div className="text-sm text-[#A1876F] mt-5 flex flex-col gap-1">
@@ -80,7 +101,6 @@ const Product = () => {
         </div>
       </div>
 
-      {/* ---------- Description & Review Section ------------- */}
       <div className="mt-20 text-[#40350A]">
         <div className="flex">
           <b className="border px-5 py-3 text-sm">Description</b>
@@ -105,7 +125,6 @@ const Product = () => {
         </div>
       </div>
 
-      {/* --------- display related products ---------- */}
       <RelatedProduct
         category={productData.category}
         subCategory={productData.subCategory}

@@ -1,5 +1,4 @@
 import React from "react";
-import { assets } from "../assets/assets";
 import { RiCustomerServiceFill } from "react-icons/ri";
 import { SiTicktick } from "react-icons/si";
 import { TbExchange } from "react-icons/tb";

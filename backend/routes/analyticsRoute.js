@@ -4,7 +4,10 @@ import {
   getTotalRevenue,
   getTotalUsers,
   getTotalProducts,
+  getDailySales,
+  getWeeklySales,
   getMonthlySales,
+  getYearlySales,
   getTopCategories,
   getTopProductsByRevenue,
   getUserRegistrations,
@@ -19,7 +22,10 @@ analyticsRouter.get('/total-orders', getTotalOrders);
 analyticsRouter.get('/total-revenue', getTotalRevenue);
 analyticsRouter.get('/total-users', getTotalUsers);
 analyticsRouter.get('/total-products', getTotalProducts);
+analyticsRouter.get('/daily-sales', getDailySales);
+analyticsRouter.get('/weekly-sales', getWeeklySales);
 analyticsRouter.get('/monthly-sales', getMonthlySales);
+analyticsRouter.get('/yearly-sales', getYearlySales);
 analyticsRouter.get('/top-categories', getTopCategories);
 analyticsRouter.get('/top-products-revenue', getTopProductsByRevenue);
 analyticsRouter.get('/user-registrations', getUserRegistrations);

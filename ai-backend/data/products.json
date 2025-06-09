@@ -1,0 +1,175 @@
+[
+  {
+    "_id": "67a3b6b8f1d6c3dbc0dc3eb2",
+    "name": "ksdklah",
+    "description": "gooddd",
+    "price": 12345,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1738782395/uuupdd13ybfbxhuhvgea.jpg",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1738782393/zijsyylla9c3mrhbkzql.webp",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1738782394/u5yv0fezdpc5j0aljmd9.jpg",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1738782394/jcdxqxlpvk8tso8wypb9.jpg"
+    ],
+    "category": "Men",
+    "subCategory": "Topwear",
+    "sizes": [
+      "XXL"
+    ],
+    "bestseller": true,
+    "date": 1738782392969,
+    "__v": 0
+  },
+  {
+    "_id": "681b1a68d3556a05a0094e52",
+    "name": "TV",
+    "description": "wqfreh",
+    "price": 121321,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1746606698/msnywovj47ybvoogybtl.jpg",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1746606695/lstg8cgucg7nycvmm6bk.jpg",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1746606698/m2reok3biv9gkcygkjao.jpg",
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1746606698/eopwe8jtotcvlahycvlt.jpg"
+    ],
+    "category": "Men",
+    "subCategory": "Topwear",
+    "sizes": [],
+    "bestseller": true,
+    "date": 1746606696714,
+    "__v": 0
+  },
+  {
+    "_id": "6838cced0a625088297711ca",
+    "name": "saba",
+    "description": "saba bewakuf hai",
+    "price": 343240,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748552939/l4qzk6h48topgkeune98.png"
+    ],
+    "category": "Women",
+    "subCategory": "Bottomwear",
+    "bestseller": true,
+    "date": 1748552941145,
+    "createdAt": "2025-05-29T21:09:01.159Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838ce4d0a625088297711d3",
+    "name": "shelf",
+    "description": "sjdjdhfjwehadla",
+    "price": 27327,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748553292/ekm6v0ebprdnfoqhf9cx.jpg"
+    ],
+    "category": "Women",
+    "subCategory": "Bottomwear",
+    "bestseller": true,
+    "date": 1748553293756,
+    "createdAt": "2025-05-29T21:14:53.760Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838cebf0a625088297711d5",
+    "name": "ezio",
+    "description": "efedfdeawfewf",
+    "price": 24324,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748553405/gztohkbgwakuafrncpkb.jpg"
+    ],
+    "category": "Kids",
+    "subCategory": "Bottomwear",
+    "bestseller": true,
+    "date": 1748553407100,
+    "createdAt": "2025-05-29T21:16:47.102Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838d640de765c30ce46299c",
+    "name": "tree",
+    "description": "kekdnksanfnknald",
+    "price": 243254,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748555326/xzgk2joqh5r1jhtpavr7.jpg"
+    ],
+    "category": "Kids",
+    "subCategory": "Bottomwear",
+    "bestseller": false,
+    "date": 1748555328075,
+    "createdAt": "2025-05-29T21:48:48.082Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838d742c4b4d81386b33b2c",
+    "name": "wewb",
+    "description": "fsd",
+    "price": 343,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748555584/dk4ihmcjdbxqllnt7wxk.png"
+    ],
+    "category": "Kids",
+    "subCategory": "Bottomwear",
+    "bestseller": false,
+    "date": 1748555586508,
+    "createdAt": "2025-05-29T21:53:06.515Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838d7ae1acd7b16213a79e1",
+    "name": "wpx",
+    "description": "asfsad",
+    "price": 323,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748555692/cpiimzrxyiwcfsokvtcg.jpg"
+    ],
+    "category": "Kids",
+    "subCategory": "Bottomwear",
+    "bestseller": false,
+    "date": 1748555694008,
+    "createdAt": "2025-05-29T21:54:54.016Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838d81e40ae6eef03aa7d4d",
+    "name": "tshirt",
+    "description": "dwqewq",
+    "price": 131312,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748555805/yiejksu682z3vg0y2w8k.png"
+    ],
+    "category": "Men",
+    "subCategory": "Topwear",
+    "bestseller": false,
+    "date": 1748555806437,
+    "createdAt": "2025-05-29T21:56:46.445Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838d92f40ae6eef03aa7d51",
+    "name": "mikasa",
+    "description": "dsada",
+    "price": 332,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748556078/bjepshhoffrvqksgzg3h.jpg"
+    ],
+    "category": "Men",
+    "subCategory": "Topwear",
+    "bestseller": false,
+    "date": 1748556079529,
+    "createdAt": "2025-05-29T22:01:19.530Z",
+    "__v": 0
+  },
+  {
+    "_id": "6838dc150c0e15cd00f06038",
+    "name": "munnia",
+    "description": "size : 5' 7''\r\nweight : 50\r\n",
+    "price": 3423,
+    "image": [
+      "https://res.cloudinary.com/dvn20yn4l/image/upload/v1748556820/c11yg2tzexiwtbtzfdsy.jpg"
+    ],
+    "category": "Men",
+    "subCategory": "Topwear",
+    "bestseller": false,
+    "date": 1748556821555,
+    "createdAt": "2025-05-29T22:13:41.556Z",
+    "__v": 0
+  }
+]

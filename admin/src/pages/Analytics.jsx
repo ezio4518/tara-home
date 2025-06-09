@@ -22,6 +22,7 @@ const COLORS = ["#40350A", "#A1876F", "#F0E1C6", "#CBB89D", "#7B674F"];
 
 const Analytics = ({ token }) => {
   const [data, setData] = useState({});
+  const [salesRange, setSalesRange] = useState("daily");
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -31,7 +32,10 @@ const Analytics = ({ token }) => {
           "total-revenue",
           "total-users",
           "total-products",
+          "daily-sales",
+          "weekly-sales",
           "monthly-sales",
+          "yearly-sales",
           "top-categories",
           "top-products-revenue",
           "user-registrations",
@@ -39,7 +43,6 @@ const Analytics = ({ token }) => {
           "order-status-distribution",
           "payment-methods",
         ];
-
         const responses = await Promise.all(
           endpoints.map((endpoint) =>
             axios.get(`${backendUrl}/api/analytics/${endpoint}`, {
@@ -47,19 +50,30 @@ const Analytics = ({ token }) => {
             })
           )
         );
-
         const result = Object.fromEntries(
           endpoints.map((key, idx) => [key, responses[idx].data])
         );
-
         setData(result);
       } catch (error) {
         console.error("Error loading analytics:", error);
       }
     };
-
     fetchAll();
   }, [token]);
+
+  // ✅ Format X-axis labels for daily/monthly
+  const formatXAxisLabel = (value) => {
+    if (salesRange === "daily") {
+      const date = new Date(value);
+      return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }); // 30 May
+    }
+    if (salesRange === "monthly") {
+      const [year, month] = value.split("-");
+      const date = new Date(`${year}-${month}-01`);
+      return date.toLocaleDateString("en-GB", { month: "short" }); // May
+    }
+    return value;
+  };
 
   return (
     <div className="min-h-screen px-6 py-12 text-[#40350A]">
@@ -69,27 +83,47 @@ const Analytics = ({ token }) => {
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <StatCard
-          label="Total Orders"
-          value={data["total-orders"]?.totalOrders}
-        />
+        <StatCard label="Total Orders" value={data["total-orders"]?.totalOrders} />
         <StatCard
           label="Total Revenue"
           value={`₹${data["total-revenue"]?.totalRevenue || 0}`}
         />
         <StatCard label="Total Users" value={data["total-users"]?.totalUsers} />
-        <StatCard
-          label="Total Products"
-          value={data["total-products"]?.totalProducts}
-        />
+        <StatCard label="Total Products" value={data["total-products"]?.totalProducts} />
       </div>
 
       <div className="mt-12 space-y-12">
-        <ChartCard title="📈 Monthly Sales">
+        <ChartCard title="📊 Sales Overview">
+          <div className="flex gap-4 mb-4">
+            {["daily", "weekly", "monthly", "yearly"].map((range) => (
+              <button
+                key={range}
+                onClick={() => setSalesRange(range)}
+                className={`px-4 py-2 rounded-md font-medium ${
+                  salesRange === range
+                    ? "bg-[#40350A] text-white"
+                    : "bg-[#CBB89D] text-[#40350A]"
+                }`}
+              >
+                {range.charAt(0).toUpperCase() + range.slice(1)}
+              </button>
+            ))}
+          </div>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data["monthly-sales"] || []}>
+            <LineChart data={data[`${salesRange}-sales`] || []}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
+              <XAxis
+                dataKey={
+                  salesRange === "yearly"
+                    ? "year"
+                    : salesRange === "monthly"
+                    ? "month"
+                    : salesRange === "weekly"
+                    ? "week"
+                    : "day"
+                }
+                tickFormatter={formatXAxisLabel}
+              />
               <YAxis />
               <Tooltip />
               <Legend />

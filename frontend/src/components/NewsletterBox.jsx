@@ -1,26 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+// import 'react-toastify/dist/ReactToastify.css';
 
 const NewsletterBox = () => {
-  // Handler for form submission
-  // This function prevents the default form submission behavior ie marking it fill and not reaload page after submitting it
+  const [email, setEmail] = useState("");
+
   const onSubmitHandler = (event) => {
     event.preventDefault();
+
+    // Show toast
+    toast.success("You are subscribed to our email services");
+
+    // Clear input
+    setEmail("");
   };
 
   return (
-    <div className=" text-center">
+    <div className="text-center">
       <p className="text-2xl font-medium" style={{ color: "#40350A" }}>
         Subscribe now & get 20% off
       </p>
 
       <p className="text-[#A1876F] mt-3">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry.
+        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
       </p>
 
       <form
         onSubmit={onSubmitHandler}
-        className="w-full sm:w-1/2 flex items-center gap-3 mx-auto my-6  pl-3"
+        className="w-full sm:w-1/2 flex items-center gap-3 mx-auto my-6 pl-3"
         style={{ borderColor: "#5B3720", borderWidth: "2px" }}
       >
         <input
@@ -28,6 +35,8 @@ const NewsletterBox = () => {
           type="email"
           placeholder="Enter your email"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           style={{ color: "#A1876F" }}
         />
         <button
@@ -42,8 +51,14 @@ const NewsletterBox = () => {
           SUBSCRIBE
         </button>
       </form>
+
+      {/* Toast container */}
+      <ToastContainer/>
     </div>
   );
 };
 
 export default NewsletterBox;
+
+
+// hidden sm:block

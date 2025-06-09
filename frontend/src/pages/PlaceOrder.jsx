@@ -18,7 +18,7 @@ const PlaceOrder = () => {
     delivery_fee,
     products,
     coin,
-    getUserInfo
+    getUserInfo,
   } = useContext(ShopContext);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -102,7 +102,7 @@ const PlaceOrder = () => {
           );
           if (response.data.success) {
             setCartItems({});
-            await getUserInfo(token); 
+            await getUserInfo(token);
             navigate("/orders");
           } else {
             toast.error(response.data.message);
@@ -254,11 +254,16 @@ const PlaceOrder = () => {
           <div className="flex gap-3 flex-col lg:flex-row">
             <div
               onClick={() => setMethod("stripe")}
-              className="flex items-center gap-3 border border-[#40350A] rounded p-2 px-3 cursor-pointer"
+              className={`flex items-center gap-3 rounded p-2 px-3 cursor-pointer transition-all duration-200
+    ${
+      method === "stripe"
+        ? "bg-[#F9F4ED] border-2 border-[#40350A] shadow-sm scale-[1.01]"
+        : "border border-[#40350A]"
+    }`}
             >
               <p
                 className={`min-w-3.5 h-3.5 border border-[#40350A] rounded-full ${
-                  method === "stripe" ? "bg-[#F0E1C6]" : ""
+                  method === "stripe" ? "bg-[#E5D3B2]" : ""
                 }`}
               ></p>
               <img className="h-5 mx-4" src={assets.stripe_logo} alt="" />
@@ -266,11 +271,16 @@ const PlaceOrder = () => {
 
             <div
               onClick={() => setMethod("razorpay")}
-              className="flex items-center gap-3 border border-[#40350A] rounded p-2 px-3 cursor-pointer"
+              className={`flex items-center gap-3 rounded p-2 px-3 cursor-pointer transition-all duration-200
+    ${
+      method === "razorpay"
+        ? "bg-[#F9F4ED] border-2 border-[#40350A] shadow-sm scale-[1.01]"
+        : "border border-[#40350A]"
+    }`}
             >
               <p
                 className={`min-w-3.5 h-3.5 border border-[#40350A] rounded-full ${
-                  method === "razorpay" ? "bg-[#F0E1C6]" : ""
+                  method === "razorpay" ? "bg-[#E5D3B2]" : ""
                 }`}
               ></p>
               <img className="h-5 mx-4" src={assets.razorpay_logo} alt="" />
@@ -278,14 +288,19 @@ const PlaceOrder = () => {
 
             <div
               onClick={() => setMethod("cod")}
-              className="flex items-center gap-3 border border-[#40350A] rounded p-2 px-3 cursor-pointer"
+              className={`flex items-center gap-3 rounded p-2 px-3 cursor-pointer transition-all duration-200
+    ${
+      method === "cod"
+        ? "bg-[#F9F4ED] border-2 border-[#40350A] shadow-sm scale-[1.01]"
+        : "border border-[#40350A]"
+    }`}
             >
               <p
                 className={`min-w-3.5 h-3.5 border border-[#40350A] rounded-full ${
-                  method === "cod" ? "bg-[#F0E1C6]" : ""
+                  method === "cod" ? "bg-[#E5D3B2]" : ""
                 }`}
               ></p>
-              <p className="text-gray-500 text-sm font-medium mx-4">
+              <p className="text-gray-600 text-sm font-medium mx-4">
                 CASH ON DELIVERY
               </p>
             </div>
