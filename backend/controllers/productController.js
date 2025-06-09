@@ -42,7 +42,7 @@ const addProduct = async (req, res) => {
 
     // Notify AI backend
     try {
-      await axios.post(process.env.AI_BACKEND_URL + "/update-product", {
+      await axios.post(process.env.AI_BACKEND_URL + "/api/update-product", {
         name: product.name,
         description: product.description,
         price: product.price,

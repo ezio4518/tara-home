@@ -9,10 +9,10 @@ export const handleChat = async (req, res) => {
 
   try {
     const collection = await getCollection();
+
     const embeddings = new HuggingFaceTransformersEmbeddings({
       model: "Xenova/all-MiniLM-L6-v2",
     });
-    console.log("✅ Using embeddings model:", embeddings.model);
 
     const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
       collection,
@@ -20,22 +20,33 @@ export const handleChat = async (req, res) => {
       textKey: "text",
       embeddingKey: "embedding",
     });
-    console.log("✅ Connected to MongoDB Atlas Vector Search");
 
     const results = await vectorStore.similaritySearch(question, 4);
     const context = results.map((doc) => doc.pageContent).join("\n\n");
-    console.log("✅ Retrieved context from vector store");
 
     const llm = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY,
       model: "gemini-2.0-flash",
-      temperature: 0.3,
+      temperature: 0.2,
     });
-    console.log("✅ Initialized Gemini LLM with model:", llm.model);
 
-    const prompt = `Answer this based on context only:\n\nContext:\n${context}\n\nQuestion: ${question}\n\nAnswer:`;
+    const prompt = `
+You are a helpful and polite virtual assistant for an e-commerce website. 
+Your primary role is to:
+- Answer product-related questions using the provided context.
+- If the user asks general questions like "hello", "who are you", "help", or any non-product query, respond politely and guide the user to ask about products, orders, or support.
+- If unsure, ask the customer to rephrase or provide more detail.
+
+Context:
+${context}
+
+Customer Question: ${question}
+
+Answer:
+`;
+
     const response = await llm.invoke(prompt);
-
+    console.log("✅ Gemini RAG response:", response.text);
     res.json({ answer: response.text });
   } catch (err) {
     console.error("❌ Gemini RAG error:", err.message);
