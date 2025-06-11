@@ -14,8 +14,10 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
   const [description, setDescription] = useState(product.description);
   const [price, setPrice] = useState(product.price);
   const [category, setCategory] = useState(product.category);
+  const [company, setCompany] = useState(product.company);
   const [subCategory, setSubCategory] = useState(product.subCategory);
   const [newCategory, setNewCategory] = useState("");
+  const [newCompany, setNewCompany] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
   const [bestseller, setBestseller] = useState(product.bestseller);
   const [loading, setLoading] = useState(false);
@@ -38,10 +40,12 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
     setLoading(true);
     try {
       const finalCategory = category === "add_new" ? newCategory.trim() : category;
+      const finalCompany = company === "add_new" ? newCompany.trim() : company;
       const finalSubCategory = subCategory === "add_new" ? newSubCategory.trim() : subCategory;
 
       await axios.post(`${backendUrl}/api/category/add`, {
         name: finalCategory,
+        company: finalCompany,
         subCategory: finalSubCategory,
       });
 
@@ -51,23 +55,24 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
       formData.append('description', description);
       formData.append('price', price);
       formData.append('category', finalCategory);
+      formData.append('company', finalCompany);
       formData.append('subCategory', finalSubCategory);
       formData.append('bestseller', bestseller);
-      image1 && formData.append("image1", image1);
-      image2 && formData.append("image2", image2);
-      image3 && formData.append("image3", image3);
-      image4 && formData.append("image4", image4);
+      if (image1) formData.append('image1', image1);
+      if (image2) formData.append('image2', image2);
+      if (image3) formData.append('image3', image3);
+      if (image4) formData.append('image4', image4);
 
-      const response = await axios.post(`${backendUrl}/api/product/update`, formData, {
+      const res = await axios.post(`${backendUrl}/api/product/update`, formData, {
         headers: { token },
       });
 
-      if (response.data.success) {
+      if (res.data.success) {
         toast.success("Product updated successfully!");
         onUpdate();
         onClose();
       } else {
-        toast.error(response.data.message);
+        toast.error(res.data.message);
       }
     } catch (err) {
       toast.error(err.message);
@@ -82,11 +87,12 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
         <button onClick={onClose} className="absolute right-4 top-2 text-xl">✕</button>
         <h2 className="text-xl font-bold mb-4">Edit Product</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {/* Images */}
           <div className="flex gap-2">
             {[1, 2, 3, 4].map((i) => {
               const img = product.image[i - 1];
-              const state = eval(`image${i}`);
-              const setState = eval(`setImage${i}`);
+              const state = eval("image" + i);
+              const setState = eval("setImage" + i);
               return (
                 <div key={i}>
                   <label htmlFor={`edit-img-${i}`}>
@@ -107,32 +113,19 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
             })}
           </div>
 
-          <input
-            type="text"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Product Name"
-            className="border px-3 py-2"
-          />
+          {/* Text inputs */}
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Product Name" className="border px-3 py-2" />
+          <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" className="border px-3 py-2" />
 
-          <textarea
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            placeholder="Description"
-            className="border px-3 py-2"
-          />
-
+          {/* Selects */}
           <div className="flex gap-4 flex-wrap">
-            {/* Category Select */}
+            {/* Category */}
             <div className="flex flex-col">
-              <select
-                value={category}
-                onChange={e => {
-                  setCategory(e.target.value);
-                  setSubCategory("");
-                }}
-                className="border px-3 py-2"
-              >
+              <select value={category} onChange={e => {
+                setCategory(e.target.value);
+                setCompany("");
+                setSubCategory("");
+              }} className="border px-3 py-2">
                 <option value="">Select Category</option>
                 {allCategories.map((cat, i) => (
                   <option key={i} value={cat.name}>{cat.name}</option>
@@ -140,66 +133,55 @@ const EditProductPopup = ({ product, token, onClose, onUpdate }) => {
                 <option value="add_new">+ Add New Category</option>
               </select>
               {category === "add_new" && (
-                <input
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  placeholder="Enter new category"
-                  className="mt-1 px-3 py-2 border"
-                  required
-                />
+                <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="Enter new category" className="mt-1 px-3 py-2 border" required />
               )}
             </div>
 
-            {/* Subcategory Select */}
+            {/* Company */}
             <div className="flex flex-col">
-              <select
-                value={subCategory}
-                onChange={e => setSubCategory(e.target.value)}
-                className="border px-3 py-2"
-              >
-                <option value="">Select Subcategory</option>
+              <select value={company} onChange={e => {
+                setCompany(e.target.value);
+                setSubCategory("");
+              }} className="border px-3 py-2">
+                <option value="">Select Company</option>
                 {category !== "add_new" &&
-                  allCategories.find((cat) => cat.name === category)
-                  ?.subCategories.map((sub, i) => (
-                    <option key={i} value={sub}>{sub}</option>
+                  allCategories.find(c => c.name === category)?.companies.map((com, i) => (
+                    <option key={i} value={com.companyName}>{com.companyName}</option>
                   ))}
+                <option value="add_new">+ Add New Company</option>
+              </select>
+              {company === "add_new" && (
+                <input value={newCompany} onChange={(e) => setNewCompany(e.target.value)} placeholder="Enter new company" className="mt-1 px-3 py-2 border" required />
+              )}
+            </div>
+
+            {/* SubCategory */}
+            <div className="flex flex-col">
+              <select value={subCategory} onChange={e => setSubCategory(e.target.value)} className="border px-3 py-2">
+                <option value="">Select Subcategory</option>
+                {category !== "add_new" && company !== "add_new" &&
+                  allCategories.find(c => c.name === category)
+                    ?.companies.find(co => co.companyName === company)
+                    ?.subCategories.map((sc, i) => (
+                      <option key={i} value={sc.name}>{sc.name}</option>
+                    ))}
                 <option value="add_new">+ Add New Subcategory</option>
               </select>
               {subCategory === "add_new" && (
-                <input
-                  value={newSubCategory}
-                  onChange={(e) => setNewSubCategory(e.target.value)}
-                  placeholder="Enter new subcategory"
-                  className="mt-1 px-3 py-2 border"
-                  required
-                />
+                <input value={newSubCategory} onChange={(e) => setNewSubCategory(e.target.value)} placeholder="Enter new subcategory" className="mt-1 px-3 py-2 border" required />
               )}
             </div>
 
             {/* Price */}
-            <input
-              type="number"
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              placeholder="Price"
-              className="border px-3 py-2 w-24"
-            />
+            <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Price" className="border px-3 py-2 w-24" />
           </div>
 
           <label className="flex gap-2">
-            <input
-              type="checkbox"
-              checked={bestseller}
-              onChange={() => setBestseller(!bestseller)}
-            />
+            <input type="checkbox" checked={bestseller} onChange={() => setBestseller(!bestseller)} />
             Bestseller
           </label>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-[#40350A] text-white py-2 rounded"
-          >
+          <button type="submit" disabled={loading} className="bg-[#40350A] text-white py-2 rounded">
             {loading ? <ClipLoader size={20} color="white" /> : "Update"}
           </button>
         </form>

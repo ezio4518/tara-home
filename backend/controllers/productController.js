@@ -7,8 +7,15 @@ dotenv.config();
 // function for add product
 const addProduct = async (req, res) => {
   try {
-    const { name, description, price, category, subCategory, bestseller } =
-      req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      company,
+      subCategory,
+      bestseller,
+    } = req.body;
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
@@ -29,6 +36,7 @@ const addProduct = async (req, res) => {
       name,
       description,
       category,
+      company,
       price: Number(price),
       subCategory,
       bestseller: bestseller === "true" ? true : false,
@@ -47,6 +55,7 @@ const addProduct = async (req, res) => {
         description: product.description,
         price: product.price,
         category: product.category,
+        company: product.company,
         subCategory: product.subCategory,
         bestseller: product.bestseller,
         date: product.date,
@@ -101,11 +110,12 @@ const singleProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const {
-      productId, 
+      productId,
       name,
       description,
       price,
       category,
+      company,
       subCategory,
       bestseller,
     } = req.body;
@@ -115,6 +125,7 @@ const updateProduct = async (req, res) => {
       description,
       price: Number(price),
       category,
+      company,
       subCategory,
       bestseller: bestseller === "true" || bestseller === true,
     };

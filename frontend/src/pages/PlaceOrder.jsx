@@ -81,7 +81,16 @@ const PlaceOrder = () => {
           );
           if (itemInfo) {
             itemInfo.quantity = cartItems[itemId];
-            orderItems.push(itemInfo);
+            orderItems.push({
+              _id: itemInfo._id,
+              name: itemInfo.name,
+              image: itemInfo.image,
+              price: itemInfo.price,
+              quantity: itemInfo.quantity,
+              category: itemInfo.category,
+              company: itemInfo.company,
+              subCategory: itemInfo.subCategory,
+            });
           }
         }
       }

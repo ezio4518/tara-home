@@ -1,11 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { backendUrl } from "../App";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const Home = ({ token }) => {
+  const [loading, setLoading] = useState(false);
+
   const exportOrdersToExcel = async () => {
+    setLoading(true);
     try {
       const response = await axios.post(
         `${backendUrl}/api/order/list`,
@@ -14,7 +18,6 @@ const Home = ({ token }) => {
       );
 
       const orders = response.data.orders;
-
       if (!orders || !Array.isArray(orders)) {
         throw new Error("Invalid orders data");
       }
@@ -46,7 +49,6 @@ const Home = ({ token }) => {
           Date: new Date(order.date).toLocaleString(),
         }));
 
-      // Auto-size columns based on content
       const worksheet = XLSX.utils.json_to_sheet(worksheetData);
       const worksheetCols = Object.keys(worksheetData[0] || {}).map((key) => ({
         wch:
@@ -55,18 +57,18 @@ const Home = ({ token }) => {
             ...worksheetData.map((row) =>
               row[key] ? row[key].toString().length : 0
             )
-          ) + 2, // add some padding
+          ) + 2,
       }));
       worksheet["!cols"] = worksheetCols;
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-
       XLSX.writeFile(workbook, "orders.xlsx");
     } catch (error) {
       console.error("Failed to fetch orders:", error);
       alert("Failed to export orders. Check console for details.");
     }
+    setLoading(false);
   };
 
   return (
@@ -85,7 +87,6 @@ const Home = ({ token }) => {
         >
           ➕ Add Product
         </Link>
-
         <Link
           to="/list"
           className="w-48 text-center py-4 rounded-xl shadow-md font-medium"
@@ -93,7 +94,6 @@ const Home = ({ token }) => {
         >
           📦 View Products
         </Link>
-
         <Link
           to="/orders"
           className="w-48 text-center py-4 rounded-xl shadow-md font-medium"
@@ -101,7 +101,6 @@ const Home = ({ token }) => {
         >
           📑 View Orders
         </Link>
-
         <Link
           to="/analytics"
           className="w-48 text-center py-4 rounded-xl shadow-md font-medium"
@@ -114,11 +113,19 @@ const Home = ({ token }) => {
       <hr className="w-full max-w-2xl border border-[#A1876F] mb-8" />
 
       <button
-        className="px-6 py-3 rounded-full shadow-md font-medium"
+        className="px-6 py-3 rounded-full shadow-md font-medium flex items-center gap-3"
         style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
         onClick={exportOrdersToExcel}
+        disabled={loading}
       >
-        🕒 Get Recent Orders
+        {loading ? (
+          <>
+            <ClipLoader size={20} color="#F0E1C6" />
+            Exporting...
+          </>
+        ) : (
+          <>🕒 Get Recent Orders</>
+        )}
       </button>
     </div>
   );

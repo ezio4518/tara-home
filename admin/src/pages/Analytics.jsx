@@ -17,12 +17,14 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { backendUrl } from "../App";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const COLORS = ["#40350A", "#A1876F", "#F0E1C6", "#CBB89D", "#7B674F"];
 
 const Analytics = ({ token }) => {
   const [data, setData] = useState({});
   const [salesRange, setSalesRange] = useState("daily");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -43,6 +45,7 @@ const Analytics = ({ token }) => {
           "order-status-distribution",
           "payment-methods",
         ];
+
         const responses = await Promise.all(
           endpoints.map((endpoint) =>
             axios.get(`${backendUrl}/api/analytics/${endpoint}`, {
@@ -50,30 +53,44 @@ const Analytics = ({ token }) => {
             })
           )
         );
+
         const result = Object.fromEntries(
           endpoints.map((key, idx) => [key, responses[idx].data])
         );
+
         setData(result);
       } catch (error) {
         console.error("Error loading analytics:", error);
       }
+      setLoading(false);
     };
+
     fetchAll();
   }, [token]);
 
-  // ✅ Format X-axis labels for daily/monthly
   const formatXAxisLabel = (value) => {
     if (salesRange === "daily") {
       const date = new Date(value);
-      return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }); // 30 May
+      return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+      });
     }
     if (salesRange === "monthly") {
       const [year, month] = value.split("-");
       const date = new Date(`${year}-${month}-01`);
-      return date.toLocaleDateString("en-GB", { month: "short" }); // May
+      return date.toLocaleDateString("en-GB", { month: "short" });
     }
     return value;
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen text-[#40350A]">
+        <ClipLoader size={40} color="#40350A" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen px-6 py-12 text-[#40350A]">
@@ -84,10 +101,7 @@ const Analytics = ({ token }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         <StatCard label="Total Orders" value={data["total-orders"]?.totalOrders} />
-        <StatCard
-          label="Total Revenue"
-          value={`₹${data["total-revenue"]?.totalRevenue || 0}`}
-        />
+        <StatCard label="Total Revenue" value={`₹${data["total-revenue"]?.totalRevenue || 0}`} />
         <StatCard label="Total Users" value={data["total-users"]?.totalUsers} />
         <StatCard label="Total Products" value={data["total-products"]?.totalProducts} />
       </div>
@@ -152,10 +166,7 @@ const Analytics = ({ token }) => {
 
         <ChartCard title="🏆 Top Products by Revenue">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={data["top-products-revenue"] || []}
-              margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
-            >
+            <BarChart data={data["top-products-revenue"] || []}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />

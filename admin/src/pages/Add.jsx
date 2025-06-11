@@ -1,4 +1,3 @@
-// -*- coding: utf-8 -*-
 import React, { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import axios from "axios";
@@ -16,11 +15,12 @@ const Add = ({ token }) => {
   const [price, setPrice] = useState("");
   const [bestseller, setBestseller] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [allCategories, setAllCategories] = useState([]);
   const [category, setCategory] = useState("");
+  const [company, setCompany] = useState("");
   const [subCategory, setSubCategory] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [newCompany, setNewCompany] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
 
   useEffect(() => {
@@ -40,11 +40,13 @@ const Add = ({ token }) => {
     setLoading(true);
     try {
       const finalCategory = category === "add_new" ? newCategory.trim() : category;
+      const finalCompany = company === "add_new" ? newCompany.trim() : company;
       const finalSubCategory = subCategory === "add_new" ? newSubCategory.trim() : subCategory;
 
       await axios.post(`${backendUrl}/api/category/add`, {
         name: finalCategory,
-        subCategory: finalSubCategory
+        company: finalCompany,
+        subCategory: finalSubCategory,
       });
 
       const formData = new FormData();
@@ -52,6 +54,7 @@ const Add = ({ token }) => {
       formData.append("description", description);
       formData.append("price", price);
       formData.append("category", finalCategory);
+      formData.append("company", finalCompany);
       formData.append("subCategory", finalSubCategory);
       formData.append("bestseller", bestseller);
       image1 && formData.append("image1", image1);
@@ -60,7 +63,7 @@ const Add = ({ token }) => {
       image4 && formData.append("image4", image4);
 
       const response = await axios.post(`${backendUrl}/api/product/add`, formData, {
-        headers: { token }
+        headers: { token },
       });
 
       if (response.data.success) {
@@ -74,8 +77,10 @@ const Add = ({ token }) => {
         setPrice("");
         setBestseller(false);
         setCategory("");
+        setCompany("");
         setSubCategory("");
         setNewCategory("");
+        setNewCompany("");
         setNewSubCategory("");
       } else {
         toast.error(response.data.message);
@@ -100,19 +105,54 @@ const Add = ({ token }) => {
     }
   };
 
-  const deleteSubCategory = async () => {
-    if (!category || !subCategory || subCategory === "add_new") return toast.error("Select a subcategory to delete.");
+  const deleteCompany = async () => {
+    if (!category || !company || company === "add_new") return toast.error("Select a company to delete.");
     try {
-      const res = await axios.post(`${backendUrl}/api/category/delete-subcat`, {
+      const res = await axios.post(`${backendUrl}/api/category/delete-com`, {
         name: category,
-        subCategory: subCategory
+        company: company,
       });
       toast.success(res.data.message);
       const updated = allCategories.map(cat => {
         if (cat.name === category) {
           return {
             ...cat,
-            subCategories: cat.subCategories.filter(sc => sc !== subCategory)
+            companies: cat.companies.filter(c => c.companyName !== company),
+          };
+        }
+        return cat;
+      });
+      setAllCategories(updated);
+      setCompany("");
+      setSubCategory("");
+    } catch (err) {
+      toast.error("Failed to delete company.");
+    }
+  };
+
+  const deleteSubCategory = async () => {
+    if (!category || !company || !subCategory || subCategory === "add_new")
+      return toast.error("Select a subcategory to delete.");
+    try {
+      const res = await axios.post(`${backendUrl}/api/category/delete-subcat`, {
+        name: category,
+        company: company,
+        subCategory: subCategory,
+      });
+      toast.success(res.data.message);
+      const updated = allCategories.map(cat => {
+        if (cat.name === category) {
+          return {
+            ...cat,
+            companies: cat.companies.map(com => {
+              if (com.companyName === company) {
+                return {
+                  ...com,
+                  subCategories: com.subCategories.filter(sc => sc.name !== subCategory),
+                };
+              }
+              return com;
+            }),
           };
         }
         return cat;
@@ -126,7 +166,7 @@ const Add = ({ token }) => {
 
   return (
     <form onSubmit={onSubmitHandler} className="flex flex-col w-full items-start gap-3">
-      {/* Upload Images */}
+      {/* Upload */}
       <div>
         <p className="mb-2">Upload Image</p>
         <div className="flex gap-2">
@@ -145,7 +185,7 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* Product Name */}
+      {/* Product name and desc */}
       <div className="w-full">
         <p className="mb-2">Product name</p>
         <input onChange={(e) => setName(e.target.value)} value={name}
@@ -153,8 +193,6 @@ const Add = ({ token }) => {
           style={{ borderColor: "#A1876F", color: "#A1876F" }}
           type="text" placeholder="Type here" required />
       </div>
-
-      {/* Product Description */}
       <div className="w-full">
         <p className="mb-2">Product description</p>
         <textarea onChange={(e) => setDescription(e.target.value)} value={description}
@@ -163,11 +201,16 @@ const Add = ({ token }) => {
           placeholder="Write content here" required />
       </div>
 
-      {/* Category + SubCategory + Price */}
+      {/* Category → Company → Subcategory */}
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:gap-8">
+        {/* Category */}
         <div>
-          <p className="mb-2">Product Category</p>
-          <select value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory(""); }}
+          <p className="mb-2">Category</p>
+          <select value={category} onChange={(e) => {
+            setCategory(e.target.value);
+            setCompany("");
+            setSubCategory("");
+          }}
             className="w-full px-3 py-2 border" style={{ borderColor: "#A1876F", color: "#A1876F" }}>
             <option value="">Select Category</option>
             {allCategories.map((cat, i) => (
@@ -183,15 +226,40 @@ const Add = ({ token }) => {
           )}
         </div>
 
+        {/* Company */}
+        <div>
+          <p className="mb-2">Company</p>
+          <select value={company} onChange={(e) => {
+            setCompany(e.target.value);
+            setSubCategory("");
+          }} className="w-full px-3 py-2 border" style={{ borderColor: "#A1876F", color: "#A1876F" }}>
+            <option value="">Select Company</option>
+            {category !== "add_new" &&
+              allCategories.find(c => c.name === category)?.companies.map((com, i) => (
+                <option key={i} value={com.companyName}>{com.companyName}</option>
+              ))}
+            <option value="add_new">+ Add New Company</option>
+          </select>
+          {company === "add_new" && (
+            <input value={newCompany} onChange={(e) => setNewCompany(e.target.value)}
+              placeholder="Enter new company"
+              className="mt-2 px-3 py-2 border w-full"
+              style={{ borderColor: "#A1876F", color: "#A1876F" }} required />
+          )}
+        </div>
+
+        {/* SubCategory */}
         <div>
           <p className="mb-2">Sub Category</p>
           <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)}
             className="w-full px-3 py-2 border" style={{ borderColor: "#A1876F", color: "#A1876F" }}>
             <option value="">Select Subcategory</option>
-            {category !== "add_new" &&
-              allCategories.find((cat) => cat.name === category)?.subCategories.map((sub, i) => (
-                <option key={i} value={sub}>{sub}</option>
-              ))}
+            {category !== "add_new" && company !== "add_new" &&
+              allCategories.find(c => c.name === category)
+                ?.companies.find(co => co.companyName === company)
+                ?.subCategories.map((sc, i) => (
+                  <option key={i} value={sc.name}>{sc.name}</option>
+                ))}
             <option value="add_new">+ Add New Subcategory</option>
           </select>
           {subCategory === "add_new" && (
@@ -201,28 +269,18 @@ const Add = ({ token }) => {
               style={{ borderColor: "#A1876F", color: "#A1876F" }} required />
           )}
         </div>
-
-        <div>
-          <p className="mb-2">Product Price</p>
-          <input onChange={(e) => setPrice(e.target.value)} value={price}
-            className="w-full px-3 py-2 sm:w-[120px] border"
-            style={{ borderColor: "#A1876F", color: "#A1876F" }}
-            type="number" placeholder="25" required />
-        </div>
       </div>
 
-      {/* Bestseller Checkbox */}
+      {/* Bestseller + Delete buttons */}
       <div className="flex gap-2 mt-2">
-        <input onChange={() => setBestseller((prev) => !prev)} checked={bestseller} type="checkbox" id="bestseller" />
-        <label className="cursor-pointer" htmlFor="bestseller">Add to bestseller</label>
+        <input onChange={() => setBestseller(prev => !prev)} checked={bestseller} type="checkbox" id="bestseller" />
+        <label htmlFor="bestseller">Add to bestseller</label>
       </div>
 
-      {/* 🔴 Delete Buttons */}
       <div className="flex gap-4 mt-4">
-        <button type="button" onClick={deleteCategory}
-          className="px-4 py-2 bg-red-600 text-white rounded">Delete Category</button>
-        <button type="button" onClick={deleteSubCategory}
-          className="px-4 py-2 bg-red-500 text-white rounded">Delete Subcategory</button>
+        <button type="button" onClick={deleteCategory} className="px-4 py-2 bg-red-600 text-white rounded">Delete Category</button>
+        <button type="button" onClick={deleteCompany} className="px-4 py-2 bg-red-600 text-white rounded">Delete Company</button>
+        <button type="button" onClick={deleteSubCategory} className="px-4 py-2 bg-red-600 text-white rounded">Delete Subcategory</button>
       </div>
 
       {/* Submit */}

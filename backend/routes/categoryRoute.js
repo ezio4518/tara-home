@@ -3,6 +3,7 @@ import {
   getAllCategories,
   addOrUpdateCategory,
   deleteSubCategory,
+  deleteCompany,
   deleteCategory,
 } from "../controllers/categoryController.js";
 
@@ -16,6 +17,8 @@ categoryRouter.post("/add", addOrUpdateCategory);
 
 // DELETE subcategory
 categoryRouter.post("/delete-subcat", deleteSubCategory);
+
+categoryRouter.post("/delete-com", deleteCompany);
 
 categoryRouter.post("/delete-cat", deleteCategory);
 

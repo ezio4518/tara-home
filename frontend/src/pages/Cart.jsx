@@ -39,6 +39,7 @@ const Cart = () => {
           const productData = products.find(
             (product) => product._id === item._id
           );
+          if (!productData) return null; // safety check
 
           return (
             <div

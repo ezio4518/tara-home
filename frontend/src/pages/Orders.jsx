@@ -60,7 +60,9 @@ const Orders = () => {
             <div className="flex items-start gap-6 text-sm">
               <img className="w-16 sm:w-20" src={item.image[0]} alt="" />
               <div>
-                <p className="sm:text-base font-medium">{item.name}</p>
+                <p className="sm:text-base font-medium">
+                  {item.name} | {item.category} | {item.company} | {item.subCategory}
+                </p>
                 <div className="flex items-center gap-3 mt-1 text-base text-[#40350A]">
                   <p>
                     {currency}
