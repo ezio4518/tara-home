@@ -1,8 +1,171 @@
 import { v2 as cloudinary } from "cloudinary";
 import axios from "axios";
 import productModel from "../models/productModel.js";
+import categoryModel from "../models/categoryModel.js";
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+import AdmZip from "adm-zip";
+import csv from "csv-parser";
+
 dotenv.config();
+
+const bulkUploadProducts = async (req, res) => {
+  try {
+    const csvFile = req.files?.csv?.[0];
+    const zipFile = req.files?.zip?.[0];
+
+    if (!csvFile || !zipFile) {
+      return res.status(400).json({
+        success: false,
+        message: "Both CSV and ZIP are required.",
+      });
+    }
+
+    const zip = new AdmZip(zipFile.path);
+    const tempFolder = "./temp_uploads";
+    zip.extractAllTo(tempFolder, true);
+
+    const results = [];
+    let skippedRows = 0;
+    let uploadedCount = 0;
+
+    fs.createReadStream(csvFile.path)
+      .pipe(csv())
+      .on("data", (row) => {
+        const cleanedRow = {};
+        for (const key in row) {
+          const cleanKey = key.trim();
+          const cleanValue = row[key]?.toString().trim();
+          cleanedRow[cleanKey] = cleanValue;
+        }
+        const hasData = Object.values(cleanedRow).some((val) => val !== "");
+        if (hasData) results.push(cleanedRow);
+      })
+      .on("end", async () => {
+        for (const row of results) {
+          const {
+            name,
+            description,
+            price,
+            category,
+            company,
+            subCategory,
+            bestseller,
+            image1,
+            image2,
+            image3,
+            image4,
+          } = row;
+
+          const cat = category?.trim();
+          const com = company?.trim();
+          const sub = subCategory?.trim();
+
+          // ✅ Required field checks
+          if (!name?.trim() || !price?.trim() || !cat?.trim()) {
+            console.warn("⚠️ Skipping row due to missing required fields:", row);
+            skippedRows++;
+            continue;
+          }
+
+          // ✅ Ensure category (and optionally company + subCategory)
+          let catDoc = await categoryModel.findOne({ name: cat });
+          if (!catDoc) {
+            const newCompany = com
+              ? {
+                  companyName: com,
+                  subCategories: sub ? [{ name: sub }] : [],
+                }
+              : undefined;
+            catDoc = await categoryModel.create({
+              name: cat,
+              companies: newCompany ? [newCompany] : [],
+            });
+          } else if (com) {
+            let updated = false;
+            const companyIndex = catDoc.companies.findIndex(
+              (c) => c.companyName.toLowerCase() === com.toLowerCase()
+            );
+
+            if (companyIndex === -1) {
+              catDoc.companies.push({
+                companyName: com,
+                subCategories: sub ? [{ name: sub }] : [],
+              });
+              updated = true;
+            } else if (sub) {
+              const subExists = catDoc.companies[companyIndex].subCategories.some(
+                (sc) => sc.name.toLowerCase() === sub.toLowerCase()
+              );
+              if (!subExists) {
+                catDoc.companies[companyIndex].subCategories.push({ name: sub });
+                updated = true;
+              }
+            }
+
+            if (updated) {
+              await catDoc.save();
+            }
+          }
+
+          // ✅ Upload images from ZIP
+          const imageFiles = [image1, image2, image3, image4]
+            .filter(Boolean)
+            .map((img) => img.trim());
+          const uploadedImages = [];
+
+          for (let img of imageFiles) {
+            const filePath = path.join(tempFolder, img);
+            if (fs.existsSync(filePath)) {
+              const cloud = await cloudinary.uploader.upload(filePath, {
+                resource_type: "image",
+              });
+              uploadedImages.push(cloud.secure_url);
+            }
+          }
+
+          if (uploadedImages.length === 0) {
+            console.warn(`⚠️ Skipping row — no image uploaded:`, name || row);
+            skippedRows++;
+            continue;
+          }
+
+          // ✅ Save product
+          const product = new productModel({
+            name,
+            description,
+            price: Number(price),
+            category: cat,
+            company: com || "N/A",
+            subCategory: sub || "N/A",
+            bestseller: bestseller?.toLowerCase() === "true",
+            image: uploadedImages,
+            date: Date.now(),
+          });
+
+          await product.save();
+          uploadedCount++;
+          console.log(`Upload ${uploadedCount} completed : ${name}`);
+        }
+
+        // ✅ Cleanup
+        fs.unlinkSync(csvFile.path);
+        fs.unlinkSync(zipFile.path);
+        fs.rmSync(tempFolder, { recursive: true, force: true });
+
+        return res.json({
+          success: true,
+          message: "Bulk upload completed.",
+          uploaded: uploadedCount,
+          skipped: skippedRows,
+        });
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 // function for add product
 const addProduct = async (req, res) => {
@@ -36,9 +199,9 @@ const addProduct = async (req, res) => {
       name,
       description,
       category,
-      company,
+      company: company || "N/A", // ✅ fallback to empty
+      subCategory: subCategory || "N/A", // ✅ fallback to empty
       price: Number(price),
-      subCategory,
       bestseller: bestseller === "true" ? true : false,
       image: imagesUrl,
       date: Date.now(),
@@ -166,4 +329,5 @@ export {
   removeProduct,
   singleProduct,
   updateProduct,
+  bulkUploadProducts,
 };

@@ -7,6 +7,7 @@ import axios from "axios";
 
 const Collection = () => {
   const { products, search, showSearch, backendUrl } = useContext(ShopContext);
+
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
   const [category, setCategory] = useState([]);
@@ -14,6 +15,8 @@ const Collection = () => {
   const [subCategory, setSubCategory] = useState([]);
   const [sortType, setSortType] = useState("relavent");
   const [allCategories, setAllCategories] = useState([]);
+
+  const isValid = (val) => val && val.trim() !== "" && val.toLowerCase() !== "n/a";
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -57,6 +60,7 @@ const Collection = () => {
 
   const applyFilter = () => {
     let productsCopy = [...products];
+
     if (showSearch && search) {
       productsCopy = productsCopy.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
@@ -77,6 +81,7 @@ const Collection = () => {
         subCategory.includes(item.subCategory?.toLowerCase())
       );
     }
+
     setFilterProducts(productsCopy);
   };
 
@@ -122,54 +127,36 @@ const Collection = () => {
         </p>
 
         {/* Category Filter */}
-        <div
-          className={`border border-[#D8C5A1] pl-5 py-3 mt-6 ${
-            showFilter ? "" : "hidden"
-          } sm:block`}
-        >
-          <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>
-            CATEGORIES
-          </p>
-          <div
-            className="flex flex-col gap-2 text-sm font-light"
-            style={{ color: "#A1876F" }}
-          >
-            {allCategories.map((cat, i) => (
-              <label key={i} className="flex gap-2 cursor-pointer">
-                <input
-                  className="w-3"
-                  type="checkbox"
-                  value={cat.name}
-                  onChange={() => toggleCategory(cat.name.toLowerCase())}
-                  checked={category.includes(cat.name.toLowerCase())}
-                  style={{ accentColor: "#A1876F" }}
-                />
-                {capitalize(cat.name)}
-              </label>
-            ))}
+        {allCategories.filter(cat => isValid(cat.name)).length > 0 && (
+          <div className={`border border-[#D8C5A1] pl-5 py-3 mt-6 ${showFilter ? "" : "hidden"} sm:block`}>
+            <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>CATEGORIES</p>
+            <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
+              {allCategories.filter(cat => isValid(cat.name)).map((cat, i) => (
+                <label key={i} className="flex gap-2 cursor-pointer">
+                  <input
+                    className="w-3"
+                    type="checkbox"
+                    value={cat.name}
+                    onChange={() => toggleCategory(cat.name.toLowerCase())}
+                    checked={category.includes(cat.name.toLowerCase())}
+                    style={{ accentColor: "#A1876F" }}
+                  />
+                  {capitalize(cat.name)}
+                </label>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Company Filter */}
-        {category.length === 1 && (
-          <div
-            className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${
-              showFilter ? "" : "hidden"
-            } sm:block`}
-          >
-            <p
-              className="mb-3 text-sm font-medium"
-              style={{ color: "#40350A" }}
-            >
-              COMPANIES
-            </p>
-            <div
-              className="flex flex-col gap-2 text-sm font-light"
-              style={{ color: "#A1876F" }}
-            >
-              {allCategories
-                .find((cat) => cat.name.toLowerCase() === category[0])
-                ?.companies.map((comp, i) => (
+        {category.length === 1 &&
+          allCategories.find(cat => cat.name.toLowerCase() === category[0])
+            ?.companies.filter(comp => isValid(comp.companyName)).length > 0 && (
+          <div className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${showFilter ? "" : "hidden"} sm:block`}>
+            <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>COMPANIES</p>
+            <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
+              {allCategories.find(cat => cat.name.toLowerCase() === category[0])
+                ?.companies.filter(comp => isValid(comp.companyName)).map((comp, i) => (
                   <label key={i} className="flex gap-2 cursor-pointer">
                     <input
                       className="w-3"
@@ -181,34 +168,22 @@ const Collection = () => {
                     />
                     {capitalize(comp.companyName)}
                   </label>
-                ))}
+              ))}
             </div>
           </div>
         )}
 
         {/* SubCategory Filter */}
-        {category.length === 1 && company.length === 1 && (
-          <div
-            className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${
-              showFilter ? "" : "hidden"
-            } sm:block`}
-          >
-            <p
-              className="mb-3 text-sm font-medium"
-              style={{ color: "#40350A" }}
-            >
-              TYPES
-            </p>
-            <div
-              className="flex flex-col gap-2 text-sm font-light"
-              style={{ color: "#A1876F" }}
-            >
-              {allCategories
-                .find((cat) => cat.name.toLowerCase() === category[0])
-                ?.companies.find(
-                  (comp) => comp.companyName.toLowerCase() === company[0]
-                )
-                ?.subCategories.map((sub, i) => (
+        {category.length === 1 && company.length === 1 &&
+          allCategories.find(cat => cat.name.toLowerCase() === category[0])
+            ?.companies.find(comp => comp.companyName.toLowerCase() === company[0])
+            ?.subCategories.filter(sub => isValid(sub.name)).length > 0 && (
+          <div className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${showFilter ? "" : "hidden"} sm:block`}>
+            <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>TYPES</p>
+            <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
+              {allCategories.find(cat => cat.name.toLowerCase() === category[0])
+                ?.companies.find(comp => comp.companyName.toLowerCase() === company[0])
+                ?.subCategories.filter(sub => isValid(sub.name)).map((sub, i) => (
                   <label key={i} className="flex gap-2 cursor-pointer">
                     <input
                       className="w-3"
@@ -220,25 +195,18 @@ const Collection = () => {
                     />
                     {capitalize(sub.name)}
                   </label>
-                ))}
+              ))}
             </div>
           </div>
         )}
 
-        {/* Clear Filters */}
-        {(category.length > 0 ||
-          company.length > 0 ||
-          subCategory.length > 0) && (
-          <button
-            onClick={clearFilters}
-            className="ml-5 mt-3 text-sm text-red-600 underline"
-          >
+        {(category.length > 0 || company.length > 0 || subCategory.length > 0) && (
+          <button onClick={clearFilters} className="ml-5 mt-3 text-sm text-red-600 underline">
             Clear All Filters
           </button>
         )}
       </div>
 
-      {/* Product Grid */}
       <div className="flex-1">
         <div className="flex justify-between text-base sm:text-2xl mb-4">
           <Title text1={"ALL"} text2={"COLLECTIONS"} />
@@ -252,6 +220,7 @@ const Collection = () => {
             <option value="high-low">Sort by: High to Low</option>
           </select>
         </div>
+
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
           {filterProducts.map((item, index) => (
             <ProductItem

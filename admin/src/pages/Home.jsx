@@ -112,21 +112,31 @@ const Home = ({ token }) => {
 
       <hr className="w-full max-w-2xl border border-[#A1876F] mb-8" />
 
-      <button
-        className="px-6 py-3 rounded-full shadow-md font-medium flex items-center gap-3"
-        style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
-        onClick={exportOrdersToExcel}
-        disabled={loading}
-      >
-        {loading ? (
-          <>
-            <ClipLoader size={20} color="#F0E1C6" />
-            Exporting...
-          </>
-        ) : (
-          <>🕒 Get Recent Orders</>
-        )}
-      </button>
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        <Link
+          to="/bulk-upload"
+          className="min-w-[200px] px-6 py-3 rounded-full shadow-md font-medium flex justify-center items-center gap-2"
+          style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
+        >
+          📤 Bulk Upload Products
+        </Link>
+
+        <button
+          className="min-w-[200px] px-6 py-3 rounded-full shadow-md font-medium flex justify-center items-center gap-2"
+          style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
+          onClick={exportOrdersToExcel}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <ClipLoader size={20} color="#F0E1C6" />
+              Exporting...
+            </>
+          ) : (
+            <>🕒 Get Recent Orders</>
+          )}
+        </button>
+      </div>
     </div>
   );
 };

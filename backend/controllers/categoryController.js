@@ -14,51 +14,83 @@ export const getAllCategories = async (req, res) => {
 export const addOrUpdateCategory = async (req, res) => {
   const { name, company, subCategory } = req.body;
 
-  if (!name || !company || !subCategory) {
+  if (!name || typeof name !== "string" || name.trim() === "") {
     return res.status(400).json({
       success: false,
-      message: "Category, Company, and SubCategory are required.",
+      message: "Category name is required.",
     });
   }
 
   try {
     const categoryName = name.toLowerCase().trim();
-    const companyName = company.toLowerCase().trim();
-    const subCatName = subCategory.toLowerCase().trim();
+    const companyName = company?.toLowerCase().trim();
+    const subCatName = subCategory?.toLowerCase().trim();
 
     let category = await categoryModel.findOne({ name: categoryName });
 
     if (!category) {
-      category = new categoryModel({
+      // If category does not exist, create a new one
+      const newCategory = {
         name: categoryName,
-        companies: [
-          {
-            companyName,
-            subCategories: [{ name: subCatName }],
-          },
-        ],
-      });
+        companies: [],
+      };
+
+      // If company is provided, push it into companies
+      if (companyName) {
+        const newCompany = {
+          companyName: companyName,
+          subCategories: [],
+        };
+
+        // If subcategory is also provided
+        if (subCatName) {
+          newCompany.subCategories.push({ name: subCatName });
+        }
+
+        newCategory.companies.push(newCompany);
+      }
+
+      category = new categoryModel(newCategory);
     } else {
-      let companyObj = category.companies.find(
-        (c) => c.companyName === companyName
-      );
-      if (!companyObj) {
-        category.companies.push({
-          companyName,
-          subCategories: [{ name: subCatName }],
-        });
-      } else {
-        const exists = companyObj.subCategories.some(
-          (sc) => sc.name === subCatName
+      // Category already exists
+      if (companyName) {
+        let companyObj = category.companies.find(
+          (c) => c.companyName === companyName
         );
-        if (!exists) {
-          companyObj.subCategories.push({ name: subCatName });
+
+        if (!companyObj) {
+          // If company not found, add it
+          const newCompany = {
+            companyName: companyName,
+            subCategories: [],
+          };
+
+          if (subCatName) {
+            newCompany.subCategories.push({ name: subCatName });
+          }
+
+          category.companies.push(newCompany);
+        } else {
+          // If company exists, check subCategory
+          if (subCatName) {
+            const exists = companyObj.subCategories.some(
+              (sc) => sc.name === subCatName
+            );
+            if (!exists) {
+              companyObj.subCategories.push({ name: subCatName });
+            }
+          }
         }
       }
     }
 
     await category.save();
-    res.json({ success: true, message: "Category updated", data: category });
+
+    res.json({
+      success: true,
+      message: "Category updated",
+      data: category,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

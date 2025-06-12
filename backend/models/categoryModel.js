@@ -25,7 +25,7 @@ const companySchema = new mongoose.Schema(
     subCategories: {
       type: [subCategorySchema],
       required: true,
-      validate: (arr) => Array.isArray(arr) && arr.length > 0,
+      validate: (arr) => Array.isArray(arr),
     },
   },
   { _id: false }
@@ -43,7 +43,7 @@ const categorySchema = new mongoose.Schema({
   companies: {
     type: [companySchema],
     required: true,
-    validate: (arr) => Array.isArray(arr) && arr.length > 0,
+    validate: (arr) => Array.isArray(arr),
   },
 });
 
