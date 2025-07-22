@@ -1,244 +1,3 @@
-// import React, { useContext, useEffect, useState } from "react";
-// import { ShopContext } from "../context/ShopContext";
-// import { assets } from "../assets/assets";
-// import Title from "../components/Title";
-// import ProductItem from "../components/ProductItem";
-// import axios from "axios";
-
-// const Collection = () => {
-//   const { products, search, showSearch, backendUrl } = useContext(ShopContext);
-
-//   const [showFilter, setShowFilter] = useState(false);
-//   const [filterProducts, setFilterProducts] = useState([]);
-//   const [category, setCategory] = useState([]);
-//   const [company, setCompany] = useState([]);
-//   const [subCategory, setSubCategory] = useState([]);
-//   const [sortType, setSortType] = useState("relavent");
-//   const [allCategories, setAllCategories] = useState([]);
-
-//   const isValid = (val) => val && val.trim() !== "" && val.toLowerCase() !== "n/a";
-
-//   useEffect(() => {
-//     const fetchCategories = async () => {
-//       try {
-//         const res = await axios.get(`${backendUrl}/api/category/get`);
-//         if (res.data.success) setAllCategories(res.data.data);
-//       } catch (err) {
-//         console.error("Failed to fetch categories", err);
-//       }
-//     };
-//     fetchCategories();
-//   }, []);
-
-//   const toggleCategory = (val) => {
-//     setCategory((prev) =>
-//       prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val]
-//     );
-//     setCompany([]);
-//     setSubCategory([]);
-//   };
-
-//   const toggleCompany = (val) => {
-//     setCompany((prev) =>
-//       prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val]
-//     );
-//     setSubCategory([]);
-//   };
-
-//   const toggleSubCategory = (val) => {
-//     setSubCategory((prev) =>
-//       prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val]
-//     );
-//   };
-
-//   const clearFilters = () => {
-//     setCategory([]);
-//     setCompany([]);
-//     setSubCategory([]);
-//     setSortType("relavent");
-//   };
-
-//   const applyFilter = () => {
-//     let productsCopy = [...products];
-
-//     if (showSearch && search) {
-//       productsCopy = productsCopy.filter((item) =>
-//         item.name.toLowerCase().includes(search.toLowerCase())
-//       );
-//     }
-//     if (category.length > 0) {
-//       productsCopy = productsCopy.filter((item) =>
-//         category.includes(item.category?.toLowerCase())
-//       );
-//     }
-//     if (company.length > 0) {
-//       productsCopy = productsCopy.filter((item) =>
-//         company.includes(item.company?.toLowerCase())
-//       );
-//     }
-//     if (subCategory.length > 0) {
-//       productsCopy = productsCopy.filter((item) =>
-//         subCategory.includes(item.subCategory?.toLowerCase())
-//       );
-//     }
-
-//     setFilterProducts(productsCopy);
-//   };
-
-//   const sortProduct = () => {
-//     let fpCopy = [...filterProducts];
-//     switch (sortType) {
-//       case "low-high":
-//         setFilterProducts(fpCopy.sort((a, b) => a.price - b.price));
-//         break;
-//       case "high-low":
-//         setFilterProducts(fpCopy.sort((a, b) => b.price - a.price));
-//         break;
-//       default:
-//         applyFilter();
-//         break;
-//     }
-//   };
-
-//   useEffect(() => {
-//     applyFilter();
-//   }, [category, company, subCategory, search, showSearch, products]);
-
-//   useEffect(() => {
-//     sortProduct();
-//   }, [sortType]);
-
-//   const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-
-//   return (
-//     <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t">
-//       <div className="min-w-60">
-//         <p
-//           onClick={() => setShowFilter(!showFilter)}
-//           className="my-2 text-xl flex items-center cursor-pointer gap-2"
-//           style={{ color: "#40350A" }}
-//         >
-//           FILTERS
-//           <img
-//             className={`h-3 sm:hidden ${showFilter ? "rotate-90" : ""}`}
-//             src={assets.dropdown_icon}
-//             alt=""
-//           />
-//         </p>
-
-//         {/* Category Filter */}
-//         {allCategories.filter(cat => isValid(cat.name)).length > 0 && (
-//           <div className={`border border-[#D8C5A1] pl-5 py-3 mt-6 ${showFilter ? "" : "hidden"} sm:block`}>
-//             <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>CATEGORIES</p>
-//             <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
-//               {allCategories.filter(cat => isValid(cat.name)).map((cat, i) => (
-//                 <label key={i} className="flex gap-2 cursor-pointer">
-//                   <input
-//                     className="w-3"
-//                     type="checkbox"
-//                     value={cat.name}
-//                     onChange={() => toggleCategory(cat.name.toLowerCase())}
-//                     checked={category.includes(cat.name.toLowerCase())}
-//                     style={{ accentColor: "#A1876F" }}
-//                   />
-//                   {capitalize(cat.name)}
-//                 </label>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* Company Filter */}
-//         {category.length === 1 &&
-//           allCategories.find(cat => cat.name.toLowerCase() === category[0])
-//             ?.companies.filter(comp => isValid(comp.companyName)).length > 0 && (
-//           <div className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${showFilter ? "" : "hidden"} sm:block`}>
-//             <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>COMPANIES</p>
-//             <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
-//               {allCategories.find(cat => cat.name.toLowerCase() === category[0])
-//                 ?.companies.filter(comp => isValid(comp.companyName)).map((comp, i) => (
-//                   <label key={i} className="flex gap-2 cursor-pointer">
-//                     <input
-//                       className="w-3"
-//                       type="checkbox"
-//                       value={comp.companyName}
-//                       onChange={() => toggleCompany(comp.companyName.toLowerCase())}
-//                       checked={company.includes(comp.companyName.toLowerCase())}
-//                       style={{ accentColor: "#A1876F" }}
-//                     />
-//                     {capitalize(comp.companyName)}
-//                   </label>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {/* SubCategory Filter */}
-//         {category.length === 1 && company.length === 1 &&
-//           allCategories.find(cat => cat.name.toLowerCase() === category[0])
-//             ?.companies.find(comp => comp.companyName.toLowerCase() === company[0])
-//             ?.subCategories.filter(sub => isValid(sub.name)).length > 0 && (
-//           <div className={`border border-[#D8C5A1] pl-5 py-3 my-5 ${showFilter ? "" : "hidden"} sm:block`}>
-//             <p className="mb-3 text-sm font-medium" style={{ color: "#40350A" }}>TYPES</p>
-//             <div className="flex flex-col gap-2 text-sm font-light" style={{ color: "#A1876F" }}>
-//               {allCategories.find(cat => cat.name.toLowerCase() === category[0])
-//                 ?.companies.find(comp => comp.companyName.toLowerCase() === company[0])
-//                 ?.subCategories.filter(sub => isValid(sub.name)).map((sub, i) => (
-//                   <label key={i} className="flex gap-2 cursor-pointer">
-//                     <input
-//                       className="w-3"
-//                       type="checkbox"
-//                       value={sub.name}
-//                       onChange={() => toggleSubCategory(sub.name.toLowerCase())}
-//                       checked={subCategory.includes(sub.name.toLowerCase())}
-//                       style={{ accentColor: "#A1876F" }}
-//                     />
-//                     {capitalize(sub.name)}
-//                   </label>
-//               ))}
-//             </div>
-//           </div>
-//         )}
-
-//         {(category.length > 0 || company.length > 0 || subCategory.length > 0) && (
-//           <button onClick={clearFilters} className="ml-5 mt-3 text-sm text-red-600 underline">
-//             Clear All Filters
-//           </button>
-//         )}
-//       </div>
-
-//       <div className="flex-1">
-//         <div className="flex justify-between text-base sm:text-2xl mb-4">
-//           <Title text1={"ALL"} text2={"COLLECTIONS"} />
-//           <select
-//             onChange={(e) => setSortType(e.target.value)}
-//             className="border-2 border-[#A1876F] text-sm px-2 text-[#40350A]"
-//             value={sortType}
-//           >
-//             <option value="relavent">Sort by: Relevance</option>
-//             <option value="low-high">Sort by: Low to High</option>
-//             <option value="high-low">Sort by: High to Low</option>
-//           </select>
-//         </div>
-
-//         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
-//           {filterProducts.map((item, index) => (
-//             <ProductItem
-//               key={index}
-//               name={item.name}
-//               id={item._id}
-//               price={item.price}
-//               image={item.image}
-//             />
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Collection;
-
 import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
@@ -255,7 +14,7 @@ function getId(x) {
   return String(x);
 }
 
-// VERTICAL CATEGORY FILTER TREE (NO Selected: ... shown)
+// VERTICAL CATEGORY FILTER TREE
 const CategoryFilterTree = ({
   categories,
   selectedCategoryPath,
@@ -275,7 +34,6 @@ const CategoryFilterTree = ({
       parent = selectedCategoryPath[i] || "";
       if (!parent) break;
     }
-    // If last level is selected, add next level even if empty
     if (
       levels.length === 0 ||
       (levels.length === selectedCategoryPath.length &&
@@ -416,7 +174,6 @@ const Collection = () => {
 
   return (
     <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t bg-[#FCFCFC] min-h-screen">
-      {/* FILTER SECTION */}
       <div className="min-w-72 max-w-xs">
         <p
           onClick={() => setShowFilter(!showFilter)}
@@ -443,7 +200,6 @@ const Collection = () => {
           />
         </div>
       </div>
-      {/* PRODUCTS GRID */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between text-base sm:text-2xl mb-4 items-center">
           <Title text1={"ALL"} text2={"COLLECTIONS"} />
@@ -471,6 +227,7 @@ const Collection = () => {
                 id={item._id}
                 price={item.price}
                 image={item.image}
+                unit={item.unit}
               />
             ))
           )}

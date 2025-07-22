@@ -60,7 +60,7 @@ const Cart = () => {
                   <div className="flex items-center gap-5 mt-2">
                     <p>
                       {currency}
-                      {productData.price}
+                      {productData.price} / {productData.unit || 'piece'}
                     </p>
                   </div>
                 </div>

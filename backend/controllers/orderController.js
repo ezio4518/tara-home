@@ -48,6 +48,7 @@ const placeOrder = async (req, res) => {
 // Placing orders using Stripe Method
 const placeOrderStripe = async (req, res) => {
   try {
+    // Note: The frontend must now send items as [{..., unit: 'piece'}, ...]
     const { userId, items, amount, address } = req.body;
     const { origin } = req.headers;
 
@@ -68,7 +69,9 @@ const placeOrderStripe = async (req, res) => {
       price_data: {
         currency: currency,
         product_data: {
-          name: item.name,
+          // 👇 --- CHANGE HERE --- 👇
+          // Make the product name more descriptive for the user
+          name: `${item.name} (per ${item.unit || 'piece'})`,
         },
         unit_amount: item.price * 100,
       },

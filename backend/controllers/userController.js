@@ -146,26 +146,27 @@ const getUserInfo = async (req, res) => {
   }
 };
 
-// ---------------------- UPDATE ADDRESS ----------------------
-const updateAddress = async (req, res) => {
-  try {
-    const { userId, address } = req.body;
+// ---------------------- UPDATE PROFILE ----------------------
+const updateProfile = async (req, res) => {
+    try {
+        const { userId } = req.body; // Comes from authUser middleware
+        // Receive 'name' and 'address' from the frontend
+        const { name, address } = req.body;
 
-    const user = await userModel.findByIdAndUpdate(
-      userId,
-      { address },
-      { new: true }
-    );
+        const updateData = { name, address };
 
-    if (!user) {
-      return res.json({ success: false, message: "User not found." });
+        const user = await userModel.findByIdAndUpdate(userId, updateData, { new: true });
+
+        if (!user) {
+            return res.json({ success: false, message: "User not found." });
+        }
+
+        res.json({ success: true, message: "Profile updated successfully." });
+
+    } catch (error) {
+        console.error("Update Profile Error:", error);
+        res.json({ success: false, message: "Error updating profile." });
     }
-
-    res.json({ success: true, message: "Address updated successfully." });
-  } catch (error) {
-    console.error("Update Address Error:", error);
-    res.json({ success: false, message: error.message });
-  }
 };
 
-export { registerUser, loginUser, adminLogin, getUserInfo, updateAddress };
+export { registerUser, loginUser, adminLogin, getUserInfo, updateProfile };

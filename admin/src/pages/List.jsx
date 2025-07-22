@@ -1,125 +1,3 @@
-// import axios from "axios";
-// import React, { useEffect, useState } from "react";
-// import { backendUrl, currency } from "../App";
-// import { toast } from "react-toastify";
-// import { FiEdit2 } from "react-icons/fi";
-// import EditProductPopup from "../components/EditProductPopup";
-// import ClipLoader from "react-spinners/ClipLoader";
-
-// const List = ({ token }) => {
-//   const [list, setList] = useState([]);
-//   const [editProduct, setEditProduct] = useState(null);
-//   const [showEdit, setShowEdit] = useState(false);
-//   const [loading, setLoading] = useState(false);
-
-//   const fetchList = async () => {
-//     setLoading(true);
-//     try {
-//       const response = await axios.get(backendUrl + "/api/product/list");
-//       if (response.data.success) {
-//         setList(response.data.products.reverse());
-//       } else {
-//         toast.error(response.data.message);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//       toast.error(error.message);
-//     }
-//     setLoading(false);
-//   };
-
-//   const removeProduct = async (id) => {
-//     try {
-//       const response = await axios.post(
-//         backendUrl + "/api/product/remove",
-//         { id },
-//         { headers: { token } }
-//       );
-//       if (response.data.success) {
-//         toast.success(response.data.message);
-//         await fetchList();
-//       } else {
-//         toast.error(response.data.message);
-//       }
-//     } catch (error) {
-//       console.log(error);
-//       toast.error(error.message);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchList();
-//   }, []);
-
-//   return (
-//     <>
-//       <p className="mb-2">All Products List</p>
-
-//       {loading ? (
-//         <div className="flex justify-center items-center h-32">
-//           <ClipLoader size={40} color="#40350A" />
-//         </div>
-//       ) : (
-//         <div className="flex flex-col gap-2">
-//           <div className="hidden md:grid grid-cols-[1fr_2fr_1fr_1fr_1fr_1fr_0.5fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
-//             <b>Image</b>
-//             <b>Name</b>
-//             <b>Category</b>
-//             <b>Company</b>
-//             <b>Subcategory</b>
-//             <b>Price</b>
-//             <b>Edit</b>
-//             <b className="text-center">Action</b>
-//           </div>
-
-//           {list.map((item, index) => (
-//             <div
-//               className="grid grid-cols-[1fr_3fr_1fr] md:grid-cols-[1fr_2fr_1fr_1fr_1fr_1fr_0.5fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
-//               key={index}
-//             >
-//               <img className="w-12" src={item.image[0]} alt="" />
-//               <p>{item.name}</p>
-//               <p>{item.category}</p>
-//               <p>{item.company}</p>
-//               <p>{item.subCategory}</p>
-//               <p>
-//                 {currency}
-//                 {item.price}
-//               </p>
-//               <FiEdit2
-//                 title="Edit"
-//                 className="cursor-pointer text-[#40350A] hover:text-black"
-//                 onClick={() => {
-//                   setEditProduct(item);
-//                   setShowEdit(true);
-//                 }}
-//               />
-//               <p
-//                 onClick={() => removeProduct(item._id)}
-//                 className="text-right md:text-center cursor-pointer text-lg"
-//               >
-//                 X
-//               </p>
-//             </div>
-//           ))}
-//         </div>
-//       )}
-
-//       {showEdit && (
-//         <EditProductPopup
-//           token={token}
-//           product={editProduct}
-//           onClose={() => setShowEdit(false)}
-//           onUpdate={fetchList}
-//         />
-//       )}
-//     </>
-//   );
-// };
-
-// export default List;
-
-
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { backendUrl, currency } from "../App";
@@ -228,11 +106,12 @@ const List = ({ token }) => {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
+          {/* --- 1. UPDATE HEADER --- */}
           <div className="hidden md:grid grid-cols-[1fr_2fr_2fr_1fr_0.5fr_1fr] items-center py-1 px-2 border bg-gray-100 text-sm">
             <b>Image</b>
             <b>Name</b>
             <b>Category Path</b>
-            <b>Price</b>
+            <b>Price / Unit</b>
             <b>Edit</b>
             <b className="text-center">Action</b>
           </div>
@@ -241,19 +120,15 @@ const List = ({ token }) => {
               className="grid grid-cols-[1fr_2fr_2fr] md:grid-cols-[1fr_2fr_2fr_1fr_0.5fr_1fr] items-center gap-2 py-1 px-2 border text-sm"
               key={index}
             >
-              <img className="w-12" src={item.image[0]} alt="" />
+              <img className="w-12 h-12 object-cover" src={item.image[0]} alt="" />
               <p>{item.name}</p>
               <p>
                 {getCategoryPath(item.category)}
-                {/* DEBUG: Uncomment below to see actual id mapping */}
-                {/* <br />
-                <span style={{ fontSize: '10px', color: 'gray' }}>
-                  {JSON.stringify(item.category)}
-                </span> */}
               </p>
+              {/* --- 2. UPDATE PRICE/UNIT DISPLAY --- */}
               <p>
                 {currency}
-                {item.price}
+                {item.price} / {item.unit || 'piece'}
               </p>
               <FiEdit2
                 title="Edit"
