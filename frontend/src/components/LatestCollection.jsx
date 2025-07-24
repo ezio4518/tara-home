@@ -19,8 +19,7 @@ const LatestCollection = () => {
           className="w-3/4 m-auto text-xs sm:text-sm md:text-base"
           style={{ color: "#A1876F" }}
         >
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry. Lorem Ipsum has been the.
+          Find your essentials here! Our latest collection brings innovative and reliable products for your home.
         </p>
       </div>
 

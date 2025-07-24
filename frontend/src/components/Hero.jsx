@@ -13,11 +13,11 @@ const Hero = () => {
               className="font-medium text-sm md:text-base"
               style={{ color: "#5B3720" }}
             >
-              OUR BESTSELLERS
+              DISCOVER TARA HOME
             </p>
           </div>
           <h1 className="prata-regular text-3xl sm:py-3 lg:text-5xl leading-relaxed text-black">
-            Latest Arrivals
+            Transform Your Home
           </h1>
           <div className="flex items-center gap-2">
             <p
