@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import chatRouter from "./routes/chatRoute.js";
-import updateRouter from "./routes/updateRoute.js";
+// Import the new router
+import knowledgeBaseRouter from "./routes/knowledgeBaseRoute.js"; 
 import { connectMongo } from "./config/mongodb.js";
 
 const app = express();
@@ -11,8 +12,11 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+// API Routes
 app.use("/api", chatRouter);
-app.use("/api", updateRouter);
+// Use the new knowledge base router
+app.use("/api", knowledgeBaseRouter); 
+
 app.get("/", (req, res) => res.send("🧠 Gemini RAG API is Live"));
 
 const startServer = async () => {
@@ -22,11 +26,9 @@ const startServer = async () => {
       console.log(`🚀 AI Server running at http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error("❌ Failed to connect MongoDB:", err.message);
+    console.error("❌ Failed to connect to MongoDB:", err.message);
     process.exit(1);
   }
 };
 
 startServer();
-
-

@@ -9,6 +9,19 @@ import AdmZip from "adm-zip";
 import csv from "csv-parser";
 dotenv.config();
 
+console.log("🔑 [DEBUG] API Secret Key being used by main backend:", process.env.API_SECRET_KEY);
+
+// --- START: AI Backend Integration ---
+// Create a dedicated axios instance for secure communication with the AI backend.
+const aiApiClient = axios.create({
+  baseURL: process.env.AI_BACKEND_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-KEY': process.env.API_SECRET_KEY // Your secret key for the AI backend
+  }
+});
+// --- END: AI Backend Integration ---
+
 // Bulk upload products from CSV and ZIP
 const bulkUploadProducts = async (req, res) => {
   try {
@@ -46,9 +59,8 @@ const bulkUploadProducts = async (req, res) => {
             name,
             description,
             price,
-            // 👇 --- CHANGE HERE --- 👇
-            unit, // <-- Add unit
-            category, // Now this should be the full path or node name
+            unit,
+            category,
             bestseller,
             image1,
             image2,
@@ -56,20 +68,16 @@ const bulkUploadProducts = async (req, res) => {
             image4,
           } = row;
 
-          // You must map "category" (e.g., "Gypsum/Channel/Angle") to a nodeId in the new system!
           if (!name?.trim() || !price?.trim() || !category?.trim()) {
             console.warn("⚠️ Skipping row due to missing required fields:", row);
             skippedRows++;
             continue;
           }
-
-          // Try to find the category node by traversing the path (e.g. "Gypsum/Channel/Angle")
           const categoryPath = category.split("/").map(c => c.trim().toLowerCase());
           let parent = null, node = null;
           for (const nodeName of categoryPath) {
             node = await categoryModel.findOne({ name: nodeName, parent: parent });
             if (!node) {
-              // Create node if not found
               node = new categoryModel({
                 name: nodeName,
                 parent: parent,
@@ -87,8 +95,6 @@ const bulkUploadProducts = async (req, res) => {
             skippedRows++;
             continue;
           }
-
-          // Images
           const imageFiles = [image1, image2, image3, image4]
             .filter(Boolean)
             .map((img) => img.trim());
@@ -107,24 +113,30 @@ const bulkUploadProducts = async (req, res) => {
             skippedRows++;
             continue;
           }
-
-          // Save product
           const product = new productModel({
             name,
             description,
             price: Number(price),
-             // 👇 --- CHANGE HERE --- 👇
-            unit: unit || 'piece', // <-- Add unit, with fallback
+            unit: unit || 'piece',
             category: node._id,
             bestseller: bestseller?.toLowerCase() === "true",
             image: uploadedImages,
             date: Date.now(),
           });
           await product.save();
+
+          // --- START: AI Notification ---
+          try {
+            await aiApiClient.post("/api/product", product.toObject());
+            console.log(`✅ AI Notification sent for added product: ${product.name}`);
+          } catch (err) {
+            console.error("❌ AI backend notification failed for added product:", err.message);
+          }
+          // --- END: AI Notification ---
+
           uploadedCount++;
           console.log(`Upload ${uploadedCount} completed : ${name}`);
         }
-        // Cleanup
         fs.unlinkSync(csvFile.path);
         fs.unlinkSync(zipFile.path);
         fs.rmSync(tempFolder, { recursive: true, force: true });
@@ -141,16 +153,14 @@ const bulkUploadProducts = async (req, res) => {
   }
 };
 
-// Add product
 const addProduct = async (req, res) => {
   try {
     const {
       name,
       description,
       price,
-      // 👇 --- CHANGE HERE --- 👇
-      unit, // <-- Add unit
-      category, // expects node id from frontend
+      unit,
+      category,
       bestseller,
     } = req.body;
     const image1 = req.files.image1 && req.files.image1[0];
@@ -171,8 +181,7 @@ const addProduct = async (req, res) => {
       description,
       category,
       price: Number(price),
-      // 👇 --- CHANGE HERE --- 👇
-      unit, // <-- Add unit
+      unit: unit || 'piece',
       bestseller: bestseller === "true" || bestseller === true,
       image: imagesUrl,
       date: Date.now(),
@@ -180,21 +189,15 @@ const addProduct = async (req, res) => {
     const product = new productModel(productData);
     await product.save();
 
-    // Notify AI backend (optional, keep/remove as you need)
+    // --- START: AI Notification ---
     try {
-      await axios.post(process.env.AI_BACKEND_URL + "/api/update-product", {
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        unit: product.unit,
-        category: product.category,
-        bestseller: product.bestseller,
-        date: product.date,
-        createdAt: product.createdAt,
-      });
+      // Use the toObject() method to get a plain JS object for sending
+      await aiApiClient.post("/api/product", product.toObject());
+      console.log(`✅ AI Notification sent for added product: ${product.name}`);
     } catch (err) {
-      console.error("AI backend notification failed:", err.message);
+      console.error("❌ AI backend notification failed for added product:", err.message);
     }
+    // --- END: AI Notification ---
 
     res.json({ success: true, message: "Product Added" });
   } catch (error) {
@@ -203,7 +206,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-// List products
 const listProducts = async (req, res) => {
   try {
     const products = await productModel.find({}).populate("category");
@@ -213,17 +215,30 @@ const listProducts = async (req, res) => {
   }
 };
 
-// Remove product
 const removeProduct = async (req, res) => {
   try {
-    await productModel.findByIdAndDelete(req.body.id);
+    const productId = req.body.id;
+    const deletedProduct = await productModel.findByIdAndDelete(productId);
+
+    if (!deletedProduct) {
+        return res.json({ success: false, message: "Product not found." });
+    }
+
+    // --- START: AI Notification ---
+    try {
+        await aiApiClient.delete(`/api/product/${productId}`);
+        console.log(`✅ AI Notification sent for deleted product: ${productId}`);
+    } catch (err) {
+        console.error("❌ AI backend notification failed for deleted product:", err.message);
+    }
+    // --- END: AI Notification ---
+
     res.json({ success: true, message: "Product Removed" });
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
 };
 
-// Single product info
 const singleProduct = async (req, res) => {
   try {
     const { productId } = req.body;
@@ -234,7 +249,6 @@ const singleProduct = async (req, res) => {
   }
 };
 
-// Update product
 const updateProduct = async (req, res) => {
   try {
     const {
@@ -242,8 +256,7 @@ const updateProduct = async (req, res) => {
       name,
       description,
       price,
-      // 👇 --- CHANGE HERE --- 👇
-      unit, // <-- Add unit
+      unit,
       category,
       bestseller,
     } = req.body;
@@ -251,8 +264,7 @@ const updateProduct = async (req, res) => {
       name,
       description,
       price: Number(price),
-      // 👇 --- CHANGE HERE --- 👇
-      unit, // <-- Add unit
+      unit: unit || 'piece',
       category,
       bestseller: bestseller === "true" || bestseller === true,
     };
@@ -274,7 +286,19 @@ const updateProduct = async (req, res) => {
       );
       updateData.image = imagesUrl;
     }
-    await productModel.findByIdAndUpdate(productId, updateData, { new: true });
+    const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, { new: true });
+
+    // --- START: AI Notification ---
+    if (updatedProduct) {
+        try {
+            await aiApiClient.post("/api/product", updatedProduct.toObject());
+            console.log(`✅ AI Notification sent for updated product: ${updatedProduct.name}`);
+        } catch (err) {
+            console.error("❌ AI backend notification failed for updated product:", err.message);
+        }
+    }
+    // --- END: AI Notification ---
+
     res.json({ success: true, message: "Product updated successfully" });
   } catch (error) {
     res.json({ success: false, message: error.message });

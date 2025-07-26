@@ -126,10 +126,10 @@ const Profile = () => {
                         </h2>
                         <p className='text-sm mt-1' style={{ color: "#A1876F" }}>{userData.email}</p>
                         <div className='mt-8 w-full bg-[#f0e1c64d] border border-[#A1876F] rounded-lg p-4'>
-                            <p className='text-sm font-semibold' style={{ color: "#40350A" }}>REWARD COINS</p>
+                            <p className='text-sm font-semibold' style={{ color: "#40350A" }}>TARA COINS</p>
                             <p className='text-4xl font-bold mt-1' style={{ color: "#40350A" }}>{coin}</p>
                         </div>
-                        <button type="button" onClick={logoutHandler} className='w-full mt-4 py-3 text-sm font-medium border border-[#A1876F] hover:bg-[#A1876F] hover:text-white transition-colors' style={{ color: "#A1876F" }}>
+                        <button type="button" onClick={logoutHandler} className='w-full mt-4 py-3 text-sm font-medium border border-[#A1876F] hover:bg-[#f0e1c64d] hover:text-white transition-colors' style={{ color: "#A1876F" }}>
                             LOGOUT
                         </button>
                     </div>

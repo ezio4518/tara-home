@@ -5,6 +5,10 @@ import Title from "./Title";
 const CartTotal = () => {
   const { currency, delivery_fee, coin, getCartAmount } = useContext(ShopContext);
 
+  const subtotal = getCartAmount();
+  const discount = Math.min(subtotal + delivery_fee, coin);
+  const total = subtotal + delivery_fee - discount;
+
   return (
     <div className="w-full">
       <div className="text-2xl">
@@ -18,14 +22,14 @@ const CartTotal = () => {
         <div className="flex justify-between">
           <p>Subtotal</p>
           <p>
-            {currency} {getCartAmount()}.00
+            {currency} {subtotal}.00
           </p>
         </div>
         <hr />
         <div className="flex justify-between">
           <p>Discount</p>
           <p>
-            - {currency} {coin}.00
+            - {currency} {discount}.00
           </p>
         </div>
         <hr />
@@ -40,7 +44,7 @@ const CartTotal = () => {
           <b>Total</b>
           <b>
             {currency}{" "}
-            {getCartAmount() === 0 ? 0 : getCartAmount() + delivery_fee - coin}.00
+            {total < 0 ? 0 : total}.00
           </b>
         </div>
       </div>

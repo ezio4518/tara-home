@@ -101,7 +101,8 @@ const PlaceOrder = () => {
             navigate("/orders");
             setCartItems({});
           }
-        } catch (error) {
+        } catch (error)
+ {
           toast.error(error.message);
         }
       },
@@ -131,11 +132,15 @@ const PlaceOrder = () => {
         }
       }
 
+      const subtotal = getCartAmount();
+      const discount = Math.min(subtotal + delivery_fee, coin);
+
       let orderData = {
         address: formData,
         items: orderItems,
-        amount: getCartAmount() + delivery_fee - coin,
+        amount: subtotal + delivery_fee - discount,
       };
+
 
       switch (method) {
         case "cod":
@@ -273,7 +278,8 @@ const PlaceOrder = () => {
               <p className={`min-w-3.5 h-3.5 border border-[#40350A] rounded-full ${
                   method === "cod" ? "bg-[#E5D3B2]" : ""
                 }`}
-              ></p>
+              >
+              </p>
               <p className="text-gray-600 text-sm font-medium mx-4">
                 CASH ON DELIVERY
               </p>

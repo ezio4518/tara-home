@@ -19,6 +19,9 @@ const razorpayInstance = new razorpay({
 const placeOrder = async (req, res) => {
   try {
     const { userId, items, amount, address } = req.body;
+    const user = await userModel.findById(userId);
+    const cartAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+    const discount = Math.min(user.coin, cartAmount + deliveryCharge);
 
     const orderData = {
       userId,
@@ -33,10 +36,10 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
-    const coinsToAdd = amount * 0.05;
-    const floorCoins = Math.floor(coinsToAdd);
-    await userModel.findByIdAndUpdate(userId, { $set: { coin: floorCoins } });
+    const coinsToAdd = Math.floor(cartAmount * 0.05);
+    const updatedCoins = user.coin - discount + coinsToAdd;
+
+    await userModel.findByIdAndUpdate(userId, { cartData: {}, coin: updatedCoins });
 
     res.json({ success: true, message: "Order Placed" });
   } catch (error) {
@@ -105,12 +108,21 @@ const placeOrderStripe = async (req, res) => {
 
 // Verify Stripe
 const verifyStripe = async (req, res) => {
-  const { orderId, success, userId } = req.body;
+  const { orderId, success } = req.body;
 
   try {
     if (success === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { payment: true });
-      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      const order = await orderModel.findById(orderId);
+      if(order){
+        const user = await userModel.findById(order.userId);
+        const cartAmount = order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        const discount = Math.min(user.coin, cartAmount + deliveryCharge);
+        const coinsToAdd = Math.floor(cartAmount * 0.05);
+        const updatedCoins = user.coin - discount + coinsToAdd;
+
+        await orderModel.findByIdAndUpdate(orderId, { payment: true });
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {}, coin: updatedCoins });
+      }
       res.json({ success: true });
     } else {
       await orderModel.findByIdAndDelete(orderId);
@@ -165,8 +177,16 @@ const verifyRazorpay = async (req, res) => {
 
     const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
     if (orderInfo.status === "paid") {
-      await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
-      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      const order = await orderModel.findById(orderInfo.receipt);
+      if(order){
+        const user = await userModel.findById(order.userId);
+        const cartAmount = order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        const discount = Math.min(user.coin, cartAmount + deliveryCharge);
+        const coinsToAdd = Math.floor(cartAmount * 0.05);
+        const updatedCoins = user.coin - discount + coinsToAdd;
+        await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {}, coin:updatedCoins });
+      }
       res.json({ success: true, message: "Payment Successful" });
     } else {
       res.json({ success: false, message: "Payment Failed" });

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
 import PulseLoader from "react-spinners/PulseLoader";
+import ReactMarkdown from 'react-markdown'; // <-- Import the library
 
 const FloatingChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -92,7 +93,13 @@ const FloatingChat = () => {
                     : "bg-[#F5F2EF] text-[#40350A] mr-auto"
                 }`}
               >
-                {msg.text}
+                {/* --- START: Updated Rendering Logic --- */}
+                {msg.sender === 'bot' ? (
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
+                {/* --- END: Updated Rendering Logic --- */}
               </div>
             ))}
             {loading && (
