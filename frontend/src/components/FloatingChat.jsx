@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown'; // <-- Import the library
 const FloatingChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { text: "Hello! How can I help you today?", sender: "bot" },
+    { text: "Hello! I am Tara your AI assistant. How can I help you today?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
