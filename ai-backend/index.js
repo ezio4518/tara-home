@@ -12,6 +12,13 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    message: 'AI-Backend API is alive and well!'
+  });
+});
+
 // API Routes
 app.use("/api", chatRouter);
 // Use the new knowledge base router

@@ -22,6 +22,13 @@ connectCloudinary()
 app.use(express.json())
 app.use(cors())
 
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    message: 'Backend API is alive and well!'
+  });
+});
+
 // api endpoints
 app.use('/api/user',userRouter)
 app.use('/api/product',productRouter)
