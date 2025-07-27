@@ -9,7 +9,6 @@ import AdmZip from "adm-zip";
 import csv from "csv-parser";
 dotenv.config();
 
-console.log("🔑 [DEBUG] API Secret Key being used by main backend:", process.env.API_SECRET_KEY);
 
 // --- START: AI Backend Integration ---
 // Create a dedicated axios instance for secure communication with the AI backend.
