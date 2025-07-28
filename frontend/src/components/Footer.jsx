@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { assets } from "../assets/assets";
+import { FaInstagram, FaFacebook, FaYoutube } from "react-icons/fa"; // Import social media icons
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -17,10 +18,10 @@ const Footer = () => {
         <div>
           <img src={assets.logo} className="mb-5 w-40" alt="" />
           <p className="w-full md:w-2/3 text-[#A1876F]">
-            Lorem Ipsum is simply dummy text of the printing and typesetting
-            industry. Lorem Ipsum has been the industry's standard dummy text
-            ever since the 1500s, when an unknown printer took a galley of type
-            and scrambled it to make a type specimen book.
+            Maa Tara Home delivers a wide range of superior plywood, hardware,
+            and essential home solutions, all designed for lasting quality and
+            aesthetic appeal. Your dream home truly starts with our trusted
+            materials and committed expert support.{" "}
           </p>
         </div>
 
@@ -61,7 +62,7 @@ const Footer = () => {
           <p className="text-xl font-medium mb-5" style={{ color: "#40350A" }}>
             GET IN TOUCH
           </p>
-          <ul className="flex flex-col gap-1">
+          <ul className="flex flex-col gap-3"> {/* Increased gap for spacing including icons */}
             <li>
               <a href="tel:+916205330277" style={{ color: "#A1876F" }}>
                 +91 6205330277
@@ -69,10 +70,40 @@ const Footer = () => {
             </li>
             <li>
               <a
-                href="mailto:maataraplyandhardware@gmail.com"
+                href="mailto:maatarahome1@gmail.com"
                 style={{ color: "#A1876F" }}
               >
-                maataraplyandhardware@gmail.com
+                maatarahome1@gmail.com
+              </a>
+            </li>
+            {/* New: Social media icons */}
+            <li className="flex gap-4 mt-2"> {/* Flex container for icons, added margin-top */}
+              <a
+                href="https://www.instagram.com/maatarahome?igsh=bHNmZ3N5MHQxY29q&utm_source=qr" // Replace with your actual Instagram link
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                style={{ color: "#A1876F", fontSize: "1.8rem" }} // Maintain color and size
+              >
+                <FaInstagram />
+              </a>
+              <a
+                href="https://www.facebook.com/share/19vbcwwM3p/?mibextid=wwXIfr" // Replace with your actual Facebook link
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                style={{ color: "#A1876F", fontSize: "1.8rem" }} // Maintain color and size
+              >
+                <FaFacebook />
+              </a>
+              <a
+                href="https://www.youtube.com/@MaaTaraHome" // Replace with your actual YouTube link
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+                style={{ color: "#A1876F", fontSize: "1.8rem" }} // Maintain color and size
+              >
+                <FaYoutube />
               </a>
             </li>
           </ul>
@@ -84,7 +115,7 @@ const Footer = () => {
           style={{ backgroundColor: "#40350A", height: "1px", border: "none" }}
         />
         <p className="py-5 text-sm text-center" style={{ color: "#40350A" }}>
-          Copyright 2025© Tara Home - All Right Reserved.
+          Copyright 2025 © Maa Tara Home - All Right Reserved.
         </p>
       </div>
     </div>

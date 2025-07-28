@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoChatboxEllipsesOutline } from "react-icons/io5";
 import PulseLoader from "react-spinners/PulseLoader";
+import ReactMarkdown from 'react-markdown'; // <-- Import the library
 
 const FloatingChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { text: "Hello! How can I help you today?", sender: "bot" },
+    { text: "Hello! I am Tara your AI assistant. How can I help you today?", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -92,7 +93,13 @@ const FloatingChat = () => {
                     : "bg-[#F5F2EF] text-[#40350A] mr-auto"
                 }`}
               >
-                {msg.text}
+                {/* --- START: Updated Rendering Logic --- */}
+                {msg.sender === 'bot' ? (
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
+                {/* --- END: Updated Rendering Logic --- */}
               </div>
             ))}
             {loading && (

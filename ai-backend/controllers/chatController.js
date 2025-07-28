@@ -1,55 +1,53 @@
-import { getCollection } from "../config/mongodb.js";
-import { MongoDBAtlasVectorSearch } from "@langchain/mongodb";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+import { findRelevantDocuments } from "../services/vectorStoreService.js";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { logger } from "../utils/logger.js";
+
+const llm = new ChatGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
+  model: "gemini-2.5-flash",
+  temperature: 0.3,
+});
 
 export const handleChat = async (req, res) => {
   const { question } = req.body;
-  if (!question) return res.status(400).json({ error: "Missing question" });
+  if (!question) {
+    return res.status(400).json({ success: false, error: "Question is required." });
+  }
 
   try {
-    const collection = await getCollection();
+    const context = await findRelevantDocuments(question);
 
-    const embeddings = new HuggingFaceTransformersEmbeddings({
-      model: "Xenova/all-MiniLM-L6-v2",
-    });
+    // --- START: Updated Prompt ---
+    const prompt = `You are "Tara", an expert AI assistant for "Maa Tara Home". Your goal is to provide accurate and efficient answers based ONLY on the provided "Context".
 
-    const vectorStore = new MongoDBAtlasVectorSearch(embeddings, {
-      collection,
-      indexName: "vector_index",
-      textKey: "text",
-      embeddingKey: "embedding",
-    });
+    **Instructions:**
+    1.  **Analyze the "Customer Question"** to understand the core information they are asking for.
+    2.  **Strictly use the "Context"** to find the answer. Do not use any outside knowledge.
+    3.  **If the answer is in the context:**
+        - **Answer Directly First:** Get straight to the point and provide the specific information the user asked for.
+        - **Add Brief Context After:** After giving the direct answer, you can add a short, helpful sentence of context if necessary. For example, if they ask for a phone number, give the number first, then mention what it's used for.
+        - **Keep it Concise:** Avoid unnecessary greetings or conversational filler in your replies.
+    4.  **If the answer is NOT in the context:**
+        - DO NOT make up an answer.
+        - Respond with: "I'm sorry, I don't have that specific information. Could you please rephrase, or ask about our products, store policies, or delivery details?"
+    5.  **For greetings** (e.g., "hello"): Briefly respond and ask how you can help, like: "Hello! How can I assist you today?"
 
-    const results = await vectorStore.similaritySearch(question, 4);
-    const context = results.map((doc) => doc.pageContent).join("\n\n");
+    **Context From Knowledge Base:**
+    ---
+    ${context || "No context found."}
+    ---
 
-    const llm = new ChatGoogleGenerativeAI({
-      apiKey: process.env.GEMINI_API_KEY,
-      model: "gemini-2.0-flash",
-      temperature: 0.2,
-    });
+    **Customer Question:** ${question}
 
-    const prompt = `
-You are a helpful and polite virtual assistant for an e-commerce website. 
-Your primary role is to:
-- Answer product-related questions using the provided context.
-- If the user asks general questions like "hello", "who are you", "help", or any non-product query, respond politely and guide the user to ask about products, orders, or support.
-- If unsure, ask the customer to rephrase or provide more detail.
-
-Context:
-${context}
-
-Customer Question: ${question}
-
-Answer:
-`;
+    **Your Answer:**
+    `;
+    // --- END: Updated Prompt ---
 
     const response = await llm.invoke(prompt);
-    console.log("✅ Gemini RAG response:", response.text);
-    res.json({ answer: response.text });
+
+    res.json({ success: true, answer: response.content });
   } catch (err) {
-    console.error("❌ Gemini RAG error:", err.message);
-    res.status(500).json({ error: "Gemini RAG failed", detail: err.message });
+    logger.error("❌ Chat Controller Error:", { error: err.message, stack: err.stack });
+    res.status(500).json({ success: false, error: "An error occurred while processing your request." });
   }
 };

@@ -20,8 +20,7 @@ const BestSeller = () => {
           className="w-3/4 m-auto text-xs sm:text-sm md:text-base"
           style={{ color: "#A1876F" }}
         >
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry. Lorem Ipsum has been the.
+          See what's flying off our shelves! These highly-rated products are essential for bringing strength, style, and durability to every home.
         </p>
       </div>
 
@@ -33,6 +32,7 @@ const BestSeller = () => {
             name={item.name}
             image={item.image}
             price={item.price}
+            unit={item.unit}
           />
         ))}
       </div>

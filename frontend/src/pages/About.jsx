@@ -21,25 +21,29 @@ const About = () => {
           style={{ color: "#A1876F" }}
         >
           <p>
-            Forever was born out of a passion for innovation and a desire to
-            revolutionize the way people shop online. Our journey began with a
-            simple idea: to provide a platform where customers can easily
-            discover, explore, and purchase a wide range of products from the
-            comfort of their homes.
+            Maa Tara Home is dedicated to supplying high-quality plywood,
+            modular hardware, gypsum accessories, and comprehensive home
+            improvement solutions in Patna. Our focus is on empowering every
+            home and project with unparalleled strength, style, and durability,
+            serving both homeowners and professional contractors.
           </p>
           <p>
-            Since our inception, we've worked tirelessly to curate a diverse
-            selection of high-quality products that cater to every taste and
-            preference. From fashion and beauty to electronics and home
-            essentials, we offer an extensive collection sourced from trusted
-            brands and suppliers.
+            We pride ourselves on meticulously sourcing our products from
+            trusted manufacturers, guaranteeing superior quality and consistent
+            performance across our entire range. From the foundational elements
+            of plywood and boards (including Blockboard, MDF, HDMR, and Particle
+            Board) to essential hardware, flush doors, decorative laminates
+            (like Sunmica and Acrylic), and gypsum products, we ensure reliable
+            materials for every building and renovation need.
           </p>
           <b style={{ color: "#40350A" }}>Our Mission</b>
           <p>
-            Our mission at Forever is to empower customers with choice,
-            convenience, and confidence. We're dedicated to providing a seamless
-            shopping experience that exceeds expectations, from browsing and
-            ordering to delivery and beyond.
+            Our mission at Maa Tara Home is to be the reliable cornerstone of
+            your construction and interior projects. We are committed to
+            providing not just exceptional products, but also expert guidance
+            and a seamless experience. We strive to empower our customers to
+            build with confidence, creating lasting spaces of quality and
+            beauty.
           </p>
         </div>
       </div>

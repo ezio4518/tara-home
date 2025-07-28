@@ -18,11 +18,11 @@ const NewsletterBox = () => {
   return (
     <div className="text-center">
       <p className="text-2xl font-medium" style={{ color: "#40350A" }}>
-        Subscribe now & get 20% off
+        Subscribe now & Save Big!
       </p>
 
       <p className="text-[#A1876F] mt-3">
-        Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+        Join our newsletter for exclusive discounts, the latest product arrivals, and expert tips on home improvement.
       </p>
 
       <form

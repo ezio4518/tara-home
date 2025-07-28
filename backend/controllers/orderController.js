@@ -2,6 +2,7 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import Stripe from "stripe";
 import razorpay from "razorpay";
+import { logger } from "../utils/logger.js";
 
 // global variables
 const currency = "inr";
@@ -19,6 +20,9 @@ const razorpayInstance = new razorpay({
 const placeOrder = async (req, res) => {
   try {
     const { userId, items, amount, address } = req.body;
+    const user = await userModel.findById(userId);
+    const cartAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+    const discount = Math.min(user.coin, cartAmount + deliveryCharge);
 
     const orderData = {
       userId,
@@ -33,14 +37,14 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
-    const coinsToAdd = amount * 0.05;
-    const floorCoins = Math.floor(coinsToAdd);
-    await userModel.findByIdAndUpdate(userId, { $set: { coin: floorCoins } });
+    const coinsToAdd = Math.floor(cartAmount * 0.05);
+    const updatedCoins = user.coin - discount + coinsToAdd;
+
+    await userModel.findByIdAndUpdate(userId, { cartData: {}, coin: updatedCoins });
 
     res.json({ success: true, message: "Order Placed" });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -48,6 +52,7 @@ const placeOrder = async (req, res) => {
 // Placing orders using Stripe Method
 const placeOrderStripe = async (req, res) => {
   try {
+    // Note: The frontend must now send items as [{..., unit: 'piece'}, ...]
     const { userId, items, amount, address } = req.body;
     const { origin } = req.headers;
 
@@ -68,7 +73,9 @@ const placeOrderStripe = async (req, res) => {
       price_data: {
         currency: currency,
         product_data: {
-          name: item.name,
+          // 👇 --- CHANGE HERE --- 👇
+          // Make the product name more descriptive for the user
+          name: `${item.name} (per ${item.unit || 'piece'})`,
         },
         unit_amount: item.price * 100,
       },
@@ -95,26 +102,35 @@ const placeOrderStripe = async (req, res) => {
 
     res.json({ success: true, session_url: session.url });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
 
 // Verify Stripe
 const verifyStripe = async (req, res) => {
-  const { orderId, success, userId } = req.body;
+  const { orderId, success } = req.body;
 
   try {
     if (success === "true") {
-      await orderModel.findByIdAndUpdate(orderId, { payment: true });
-      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      const order = await orderModel.findById(orderId);
+      if(order){
+        const user = await userModel.findById(order.userId);
+        const cartAmount = order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        const discount = Math.min(user.coin, cartAmount + deliveryCharge);
+        const coinsToAdd = Math.floor(cartAmount * 0.05);
+        const updatedCoins = user.coin - discount + coinsToAdd;
+
+        await orderModel.findByIdAndUpdate(orderId, { payment: true });
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {}, coin: updatedCoins });
+      }
       res.json({ success: true });
     } else {
       await orderModel.findByIdAndDelete(orderId);
       res.json({ success: false });
     }
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -145,13 +161,13 @@ const placeOrderRazorpay = async (req, res) => {
 
     await razorpayInstance.orders.create(options, (error, order) => {
       if (error) {
-        console.log(error);
+        logger.error(error);
         return res.json({ success: false, message: error });
       }
       res.json({ success: true, order });
     });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -162,14 +178,22 @@ const verifyRazorpay = async (req, res) => {
 
     const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
     if (orderInfo.status === "paid") {
-      await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
-      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+      const order = await orderModel.findById(orderInfo.receipt);
+      if(order){
+        const user = await userModel.findById(order.userId);
+        const cartAmount = order.items.reduce((total, item) => total + item.price * item.quantity, 0);
+        const discount = Math.min(user.coin, cartAmount + deliveryCharge);
+        const coinsToAdd = Math.floor(cartAmount * 0.05);
+        const updatedCoins = user.coin - discount + coinsToAdd;
+        await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+        await userModel.findByIdAndUpdate(order.userId, { cartData: {}, coin:updatedCoins });
+      }
       res.json({ success: true, message: "Payment Successful" });
     } else {
       res.json({ success: false, message: "Payment Failed" });
     }
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -180,7 +204,7 @@ const allOrders = async (req, res) => {
     const orders = await orderModel.find({});
     res.json({ success: true, orders });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -193,7 +217,7 @@ const userOrders = async (req, res) => {
     const orders = await orderModel.find({ userId });
     res.json({ success: true, orders });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -206,7 +230,7 @@ const updateStatus = async (req, res) => {
     await orderModel.findByIdAndUpdate(orderId, { status });
     res.json({ success: true, message: "Status Updated" });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };

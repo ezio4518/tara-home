@@ -39,6 +39,7 @@ const Cart = () => {
           const productData = products.find(
             (product) => product._id === item._id
           );
+          if (!productData) return null; // safety check
 
           return (
             <div
@@ -59,7 +60,7 @@ const Cart = () => {
                   <div className="flex items-center gap-5 mt-2">
                     <p>
                       {currency}
-                      {productData.price}
+                      {productData.price} / {productData.unit || 'piece'}
                     </p>
                   </div>
                 </div>

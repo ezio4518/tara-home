@@ -7,15 +7,15 @@ import ClipLoader from "react-spinners/ClipLoader";
 const Orders = () => {
   const { backendUrl, token, currency } = useContext(ShopContext);
 
-  const [orderData, setorderData] = useState([]);
-  const [loadingIndex, setLoadingIndex] = useState(null); // Track which button is loading
+  const [orderData, setOrderData] = useState([]);
+  const [loadingIndex, setLoadingIndex] = useState(null);
 
   const loadOrderData = async (index) => {
     try {
       if (!token) {
         return null;
       }
-      setLoadingIndex(index); // Set loading for this button
+      setLoadingIndex(index);
       const response = await axios.post(
         backendUrl + "/api/order/userorders",
         {},
@@ -23,26 +23,34 @@ const Orders = () => {
       );
       if (response.data.success) {
         let allOrdersItem = [];
-        response.data.orders.map((order) => {
-          order.items.map((item) => {
-            item["status"] = order.status;
-            item["payment"] = order.payment;
-            item["paymentMethod"] = order.paymentMethod;
-            item["date"] = order.date;
-            allOrdersItem.push(item);
+        response.data.orders.forEach((order) => {
+          order.items.forEach((item) => {
+            // Create a new object to avoid mutating the original item
+            const itemWithOrderDetails = {
+              ...item,
+              status: order.status,
+              payment: order.payment,
+              paymentMethod: order.paymentMethod,
+              date: order.date,
+            };
+            allOrdersItem.push(itemWithOrderDetails);
           });
         });
-        setorderData(allOrdersItem.reverse());
+        setOrderData(allOrdersItem.reverse());
       }
     } catch (error) {
       // handle error if needed
+      console.error("Failed to load order data:", error);
     } finally {
-      setLoadingIndex(null); // Reset loading
+      setLoadingIndex(null);
     }
   };
 
   useEffect(() => {
-    loadOrderData(null); // Load all orders on mount, no button loading
+    if (token) {
+        loadOrderData(null);
+    }
+    // eslint-disable-next-line
   }, [token]);
 
   return (
@@ -60,21 +68,25 @@ const Orders = () => {
             <div className="flex items-start gap-6 text-sm">
               <img className="w-16 sm:w-20" src={item.image[0]} alt="" />
               <div>
-                <p className="sm:text-base font-medium">{item.name}</p>
-                <div className="flex items-center gap-3 mt-1 text-base text-[#40350A]">
+                <p className="sm:text-base font-medium">
+                  {item.name}
+                </p>
+                {/* --- UPDATED PRICE AND QUANTITY DISPLAY --- */}
+                <div className="flex items-center gap-4 mt-1 text-base text-[#40350A]">
                   <p>
-                    {currency}
-                    {item.price}
+                    {currency}{item.price} / {item.unit || 'piece'}
                   </p>
-                  <p>Quantity: {item.quantity}</p>
+                  <p className="text-sm text-[#A1876F]">
+                    Qty: {item.quantity}
+                  </p>
                 </div>
-                <p className="mt-1">
+                <p className="mt-2 text-sm">
                   Date:{" "}
                   <span className="text-[#A1876F]">
                     {new Date(item.date).toDateString()}
                   </span>
                 </p>
-                <p className="mt-1">
+                <p className="mt-1 text-sm">
                   Payment:{" "}
                   <span className="text-[#A1876F]">{item.paymentMethod}</span>
                 </p>

@@ -1,4 +1,3 @@
-// -*- coding: utf-8 -*-
 import React, { useEffect, useState } from "react";
 import { assets } from "../assets/assets";
 import axios from "axios";
@@ -6,6 +5,201 @@ import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 import { ClipLoader } from "react-spinners";
 
+// DYNAMIC CATEGORY SELECTOR with delete per level!
+function DynamicCategorySelector({ onSelect, value }) {
+  const [levels, setLevels] = useState([
+    { parentId: null, options: [], selected: "", adding: false },
+  ]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  // Initial fetch for root
+  useEffect(() => {
+    fetchOptions(null, 0);
+    // eslint-disable-next-line
+  }, []);
+
+  // Fetch options for a given parent and level
+  const fetchOptions = async (parentId, level) => {
+    const url = parentId
+      ? `${backendUrl}/api/category/children/${parentId}`
+      : `${backendUrl}/api/category/roots`;
+    const res = await axios.get(url);
+    setLevels((ls) => {
+      const newLs = ls.slice(0, level + 1);
+      newLs[level] = { ...newLs[level], options: res.data.data, selected: "", adding: false };
+      // Always push a new empty level so user can add children to a parent with 0 children
+      if (newLs.length === level + 1) {
+        newLs.push({ parentId: null, options: [], selected: "", adding: false });
+      }
+      return newLs;
+    });
+  };
+
+  // Handle select (including "+ Add New")
+  const handleSelect = (levelIdx, nodeId) => {
+    if (nodeId === "add_new") {
+      setLevels((ls) => {
+        const newLs = ls.slice(0, levelIdx + 1);
+        newLs[levelIdx].adding = true;
+        return newLs;
+      });
+      setNewCategoryName("");
+    } else {
+      setLevels((ls) => {
+        const newLs = ls.slice(0, levelIdx + 1);
+        newLs[levelIdx].selected = nodeId;
+        newLs[levelIdx].adding = false;
+        // After a valid select, clear any deeper levels
+        newLs.length = levelIdx + 2;
+        newLs[levelIdx + 1] = { parentId: nodeId, options: [], selected: "", adding: false };
+        return newLs;
+      });
+      fetchOptions(nodeId, levelIdx + 1);
+      onSelect(nodeId);
+    }
+  };
+
+  // Add a new category at this level
+  const handleAddNew = async (levelIdx) => {
+    if (!newCategoryName.trim()) return;
+    const parentId = levelIdx === 0 ? null : levels[levelIdx - 1]?.selected || null;
+    const type = "category";
+    try {
+      const res = await axios.post(`${backendUrl}/api/category/create`, {
+        name: newCategoryName.trim(),
+        parentId,
+        type,
+      });
+      const newNode = res.data.data;
+      setLevels((ls) => {
+        const newLs = ls.slice(0, levelIdx + 2); // Only keep up to this level
+        newLs[levelIdx].options = [...(newLs[levelIdx].options || []), newNode];
+        newLs[levelIdx].selected = newNode._id;
+        newLs[levelIdx].adding = false;
+        // After add, prep empty next level for children
+        newLs[levelIdx + 1] = { parentId: newNode._id, options: [], selected: "", adding: false };
+        return newLs;
+      });
+      setNewCategoryName("");
+      fetchOptions(newNode._id, levelIdx + 1);
+      onSelect(newNode._id);
+    } catch (err) {
+      toast.error("Failed to add new category: " + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  // Delete a category at this level (deletes all descendants)
+  const deleteCategory = async (levelIdx) => {
+    const nodeId = levels[levelIdx].selected;
+    if (!nodeId) return;
+    if (!window.confirm("Delete this category and ALL its subcategories?")) return;
+    try {
+      await axios.delete(`${backendUrl}/api/category/delete/${nodeId}`);
+      // After delete, refresh that level and above
+      if (levelIdx === 0) {
+        fetchOptions(null, 0);
+      } else {
+        const parentId = levels[levelIdx - 1]?.selected || null;
+        fetchOptions(parentId, levelIdx);
+      }
+      // Reset state after deletion
+      setLevels((ls) => {
+        const newLs = ls.slice(0, levelIdx + 1);
+        newLs[levelIdx].selected = "";
+        return newLs;
+      });
+      onSelect(""); // Optionally clear selection
+      toast.success("Deleted!");
+    } catch (err) {
+      toast.error("Delete failed: " + (err?.response?.data?.message || err.message));
+    }
+  };
+
+  // Reset levels if parent resets (e.g., after submit)
+  useEffect(() => {
+    if (!value) {
+      setLevels([{ parentId: null, options: levels[0]?.options || [], selected: "", adding: false }]);
+    }
+    // eslint-disable-next-line
+  }, [value]);
+
+  // Only show levels up to the last "used" one (i.e., if no parent selected for next, don't render)
+  const visibleLevels = levels.filter(
+    (lvl, idx) => idx === 0 || levels[idx - 1].selected || levels[idx - 1].adding
+  );
+
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {visibleLevels.map((lvl, idx) =>
+        lvl.adding ? (
+          <div className="flex gap-1 mt-2" key={idx}>
+            <input
+              type="text"
+              placeholder="New category name"
+              value={newCategoryName}
+              onChange={(e) => setNewCategoryName(e.target.value)}
+              className="px-2 py-1 border"
+              style={{ borderColor: "#A1876F", color: "#A1876F" }}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={() => handleAddNew(idx)}
+              className="px-2 py-1 border bg-green-600 text-white"
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLevels((ls) => {
+                  const newLs = ls.slice(0, idx + 1);
+                  newLs[idx].adding = false;
+                  return newLs;
+                });
+              }}
+              className="px-2 py-1 border"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div key={idx} className="flex items-center gap-1">
+            <select
+              value={lvl.selected}
+              onChange={(e) => handleSelect(idx, e.target.value)}
+              className="px-2 py-1 border"
+              style={{ borderColor: "#A1876F", color: "#A1876F" }}
+            >
+              <option value="">Select...</option>
+              {(lvl.options || []).map((opt) => (
+                <option key={opt._id} value={opt._id}>
+                  {opt.name}
+                </option>
+              ))}
+              <option value="add_new">+ Add New</option>
+            </select>
+            {/* Delete button: show only if something is selected */}
+            {lvl.selected && (
+              <button
+                type="button"
+                title="Delete this category and its children"
+                className="px-2 py-1 border bg-red-500 text-white"
+                style={{ fontWeight: 700 }}
+                onClick={() => deleteCategory(idx)}
+              >
+                &#128465;
+              </button>
+            )}
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+
+// ========== MAIN ADD COMPONENT ==========
 const Add = ({ token }) => {
   const [image1, setImage1] = useState(false);
   const [image2, setImage2] = useState(false);
@@ -16,43 +210,37 @@ const Add = ({ token }) => {
   const [price, setPrice] = useState("");
   const [bestseller, setBestseller] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [categoryNodeId, setCategoryNodeId] = useState("");
+  const [unit, setUnit] = useState("piece"); // State for unit, default to 'piece'
 
-  const [allCategories, setAllCategories] = useState([]);
-  const [category, setCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  const [newSubCategory, setNewSubCategory] = useState("");
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get(`${backendUrl}/api/category/get`);
-        if (res.data.success) setAllCategories(res.data.data);
-      } catch (err) {
-        console.error("Failed to load categories", err);
-      }
-    };
-    fetchCategories();
-  }, []);
+  const resetForm = () => {
+    setName("");
+    setDescription("");
+    setImage1(false);
+    setImage2(false);
+    setImage3(false);
+    setImage4(false);
+    setPrice("");
+    setBestseller(false);
+    setCategoryNodeId("");
+    setUnit("piece"); // Reset unit state
+  };
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const finalCategory = category === "add_new" ? newCategory.trim() : category;
-      const finalSubCategory = subCategory === "add_new" ? newSubCategory.trim() : subCategory;
-
-      await axios.post(`${backendUrl}/api/category/add`, {
-        name: finalCategory,
-        subCategory: finalSubCategory
-      });
-
+      if (!categoryNodeId) {
+        toast.error("Please select a category.");
+        setLoading(false);
+        return;
+      }
       const formData = new FormData();
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", price);
-      formData.append("category", finalCategory);
-      formData.append("subCategory", finalSubCategory);
+      formData.append("unit", unit); // Append unit to form data
+      formData.append("category", categoryNodeId);
       formData.append("bestseller", bestseller);
       image1 && formData.append("image1", image1);
       image2 && formData.append("image2", image2);
@@ -60,73 +248,24 @@ const Add = ({ token }) => {
       image4 && formData.append("image4", image4);
 
       const response = await axios.post(`${backendUrl}/api/product/add`, formData, {
-        headers: { token }
+        headers: { token },
       });
-
       if (response.data.success) {
         toast.success(response.data.message);
-        setName("");
-        setDescription("");
-        setImage1(false);
-        setImage2(false);
-        setImage3(false);
-        setImage4(false);
-        setPrice("");
-        setBestseller(false);
-        setCategory("");
-        setSubCategory("");
-        setNewCategory("");
-        setNewSubCategory("");
+        resetForm();
       } else {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.error(error);
       toast.error(error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteCategory = async () => {
-    if (!category || category === "add_new") return toast.error("Select a category to delete.");
-    try {
-      const res = await axios.post(`${backendUrl}/api/category/delete-cat`, { name: category });
-      toast.success(res.data.message);
-      setCategory("");
-      setAllCategories(allCategories.filter(c => c.name !== category));
-    } catch (err) {
-      toast.error("Failed to delete category.");
-    }
-  };
-
-  const deleteSubCategory = async () => {
-    if (!category || !subCategory || subCategory === "add_new") return toast.error("Select a subcategory to delete.");
-    try {
-      const res = await axios.post(`${backendUrl}/api/category/delete-subcat`, {
-        name: category,
-        subCategory: subCategory
-      });
-      toast.success(res.data.message);
-      const updated = allCategories.map(cat => {
-        if (cat.name === category) {
-          return {
-            ...cat,
-            subCategories: cat.subCategories.filter(sc => sc !== subCategory)
-          };
-        }
-        return cat;
-      });
-      setAllCategories(updated);
-      setSubCategory("");
-    } catch (err) {
-      toast.error("Failed to delete subcategory.");
-    }
-  };
-
   return (
     <form onSubmit={onSubmitHandler} className="flex flex-col w-full items-start gap-3">
-      {/* Upload Images */}
+      {/* Upload */}
       <div>
         <p className="mb-2">Upload Image</p>
         <div className="flex gap-2">
@@ -136,99 +275,100 @@ const Add = ({ token }) => {
             return (
               <div key={i}>
                 <label htmlFor={`image${i}`}>
-                  <img className="w-20" src={!image ? assets.upload_area : URL.createObjectURL(image)} alt="" />
+                  <img
+                    className="w-20"
+                    src={!image ? assets.upload_area : URL.createObjectURL(image)}
+                    alt=""
+                  />
                 </label>
-                <input onChange={(e) => setImage(e.target.files[0])} type="file" id={`image${i}`} hidden />
+                <input
+                  onChange={(e) => setImage(e.target.files[0])}
+                  type="file"
+                  id={`image${i}`}
+                  hidden
+                />
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Product Name */}
+      {/* Product name */}
       <div className="w-full">
         <p className="mb-2">Product name</p>
-        <input onChange={(e) => setName(e.target.value)} value={name}
+        <input
+          onChange={(e) => setName(e.target.value)}
+          value={name}
           className="w-full max-w-[500px] px-3 py-2 border placeholder-[#A1876F]"
           style={{ borderColor: "#A1876F", color: "#A1876F" }}
-          type="text" placeholder="Type here" required />
+          type="text"
+          placeholder="Type here"
+          required
+        />
       </div>
-
-      {/* Product Description */}
+      {/* Product description */}
       <div className="w-full">
         <p className="mb-2">Product description</p>
-        <textarea onChange={(e) => setDescription(e.target.value)} value={description}
-          className="w-full max-w-[500px] px-3 py-2 border placeholder-[#A1876F]"
+        <textarea
+          onChange={(e) => setDescription(e.target.value)}
+          value={description}
+          className="w-full max-w-[500px] min-h-[115px] px-3 py-2 border placeholder-[#A1876F]"
           style={{ borderColor: "#A1876F", color: "#A1876F" }}
-          placeholder="Write content here" required />
+          placeholder="Write content here"
+          required
+        />
       </div>
 
-      {/* Category + SubCategory + Price */}
-      <div className="flex flex-col sm:flex-row gap-2 w-full sm:gap-8">
-        <div>
-          <p className="mb-2">Product Category</p>
-          <select value={category} onChange={(e) => { setCategory(e.target.value); setSubCategory(""); }}
-            className="w-full px-3 py-2 border" style={{ borderColor: "#A1876F", color: "#A1876F" }}>
-            <option value="">Select Category</option>
-            {allCategories.map((cat, i) => (
-              <option key={i} value={cat.name}>{cat.name}</option>
-            ))}
-            <option value="add_new">+ Add New Category</option>
-          </select>
-          {category === "add_new" && (
-            <input value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
-              placeholder="Enter new category"
-              className="mt-2 px-3 py-2 border w-full"
-              style={{ borderColor: "#A1876F", color: "#A1876F" }} required />
-          )}
-        </div>
-
-        <div>
-          <p className="mb-2">Sub Category</p>
-          <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)}
-            className="w-full px-3 py-2 border" style={{ borderColor: "#A1876F", color: "#A1876F" }}>
-            <option value="">Select Subcategory</option>
-            {category !== "add_new" &&
-              allCategories.find((cat) => cat.name === category)?.subCategories.map((sub, i) => (
-                <option key={i} value={sub}>{sub}</option>
-              ))}
-            <option value="add_new">+ Add New Subcategory</option>
-          </select>
-          {subCategory === "add_new" && (
-            <input value={newSubCategory} onChange={(e) => setNewSubCategory(e.target.value)}
-              placeholder="Enter new subcategory"
-              className="mt-2 px-3 py-2 border w-full"
-              style={{ borderColor: "#A1876F", color: "#A1876F" }} required />
-          )}
-        </div>
-
-        <div>
-          <p className="mb-2">Product Price</p>
-          <input onChange={(e) => setPrice(e.target.value)} value={price}
-            className="w-full px-3 py-2 sm:w-[120px] border"
+      {/* Combined Price and Unit Inputs */}
+      <div className="flex gap-4">
+        <div className="w-full">
+          <p className="mb-2">Price</p>
+          <input
+            onChange={(e) => setPrice(e.target.value)}
+            value={price}
+            className="w-full max-w-[200px] px-3 py-2 border placeholder-[#A1876F]"
             style={{ borderColor: "#A1876F", color: "#A1876F" }}
-            type="number" placeholder="25" required />
+            type="number"
+            min="0"
+            placeholder="₹100"
+            required
+          />
+        </div>
+        <div className="w-full">
+          <p className="mb-2">Product Unit</p>
+          <input
+            onChange={(e) => setUnit(e.target.value)}
+            value={unit}
+            className="w-full max-w-[200px] px-3 py-2 border placeholder-[#A1876F]"
+            style={{ borderColor: "#A1876F", color: "#A1876F" }}
+            type="text"
+            placeholder="e.g., piece, sq m, kg"
+            required
+          />
         </div>
       </div>
 
-      {/* Bestseller Checkbox */}
+      {/* Dynamic Category Selector */}
+      <div className="w-full">
+        <p className="mb-2">Category</p>
+        <DynamicCategorySelector onSelect={setCategoryNodeId} value={categoryNodeId} />
+      </div>
+      {/* Bestseller */}
       <div className="flex gap-2 mt-2">
-        <input onChange={() => setBestseller((prev) => !prev)} checked={bestseller} type="checkbox" id="bestseller" />
-        <label className="cursor-pointer" htmlFor="bestseller">Add to bestseller</label>
+        <input
+          onChange={() => setBestseller((prev) => !prev)}
+          checked={bestseller}
+          type="checkbox"
+          id="bestseller"
+        />
+        <label htmlFor="bestseller">Add to bestseller</label>
       </div>
-
-      {/* 🔴 Delete Buttons */}
-      <div className="flex gap-4 mt-4">
-        <button type="button" onClick={deleteCategory}
-          className="px-4 py-2 bg-red-600 text-white rounded">Delete Category</button>
-        <button type="button" onClick={deleteSubCategory}
-          className="px-4 py-2 bg-red-500 text-white rounded">Delete Subcategory</button>
-      </div>
-
       {/* Submit */}
-      <button type="submit" disabled={loading}
+      <button
+        type="submit"
+        disabled={loading}
         className="w-28 py-3 mt-4 flex justify-center items-center gap-2"
-        style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}>
+        style={{ backgroundColor: "#40350A", color: "#F0E1C6" }}
+      >
         {loading ? <ClipLoader size={20} color="#F0E1C6" /> : "ADD"}
       </button>
     </form>

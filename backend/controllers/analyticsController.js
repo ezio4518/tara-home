@@ -1,6 +1,7 @@
 import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import productModel from "../models/productModel.js";
+import { logger } from "../utils/logger.js";
 
 // Total Orders
 const getTotalOrders = async (req, res) => {
@@ -8,6 +9,7 @@ const getTotalOrders = async (req, res) => {
     const totalOrders = await orderModel.countDocuments();
     res.json({ totalOrders });
   } catch (error) {
+    logger.error('Error fetching total orders', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching total orders' });
   }
 };
@@ -19,6 +21,7 @@ const getTotalRevenue = async (req, res) => {
     const totalRevenue = orders.reduce((sum, order) => sum + order.amount, 0);
     res.json({ totalRevenue });
   } catch (error) {
+    logger.error('Error fetching total revenue', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching total revenue' });
   }
 };
@@ -29,6 +32,7 @@ const getTotalUsers = async (req, res) => {
     const totalUsers = await userModel.countDocuments();
     res.json({ totalUsers });
   } catch (error) {
+    logger.error('Error fetching total users', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching total users' });
   }
 };
@@ -39,6 +43,7 @@ const getTotalProducts = async (req, res) => {
     const totalProducts = await productModel.countDocuments();
     res.json({ totalProducts });
   } catch (error) {
+    logger.error('Error fetching total products', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching total products' });
   }
 };
@@ -79,7 +84,7 @@ const getDailySales = async (req, res) => {
 
     res.json(dailySales);
   } catch (error) {
-    console.error(error);
+    logger.error("Error fetching daily sales", { error: error.message, stack: error.stack });
     res.status(500).json({ error: "Error fetching daily sales" });
   }
 };
@@ -126,6 +131,7 @@ const getWeeklySales = async (req, res) => {
 
     res.json(weeklySales);
   } catch (error) {
+    logger.error('Error fetching weekly sales', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching weekly sales' });
   }
 };
@@ -168,6 +174,7 @@ const getMonthlySales = async (req, res) => {
 
     res.json(monthlySales);
   } catch (error) {
+    logger.error('Error fetching monthly sales', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching monthly sales' });
   }
 };
@@ -201,6 +208,7 @@ const getYearlySales = async (req, res) => {
 
     res.json(yearlySales);
   } catch (error) {
+    logger.error('Error fetching yearly sales', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching yearly sales' });
   }
 };
@@ -221,6 +229,7 @@ const getTopCategories = async (req, res) => {
       .slice(0, 5);
     res.json(topCategories);
   } catch (error) {
+    logger.error('Error fetching top categories', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching top categories' });
   }
 };
@@ -242,6 +251,7 @@ const getTopProductsByRevenue = async (req, res) => {
       .slice(0, 5);
     res.json(topProducts);
   } catch (error) {
+    logger.error('Error fetching top products by revenue', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching top products by revenue' });
   }
 };
@@ -264,6 +274,7 @@ const getUserRegistrations = async (req, res) => {
     }));
     res.json(registrations);
   } catch (error) {
+    logger.error('Error fetching user registrations', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching user registrations' });
   }
 };
@@ -284,6 +295,7 @@ const getRecentOrders = async (req, res) => {
     }));
     res.json(recentOrders);
   } catch (error) {
+    logger.error('Error fetching recent orders', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching recent orders' });
   }
 };
@@ -302,6 +314,7 @@ const getOrderStatusDistribution = async (req, res) => {
     }));
     res.json(statusDistribution);
   } catch (error) {
+    logger.error('Error fetching order status distribution', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching order status distribution' });
   }
 };
@@ -320,6 +333,7 @@ const getPaymentMethods = async (req, res) => {
     }));
     res.json(result);
   } catch (error) {
+    logger.error('Error fetching payment methods', { error: error.message, stack: error.stack });
     res.status(500).json({ error: 'Error fetching payment methods' });
   }
 };

@@ -1,109 +1,89 @@
 import categoryModel from "../models/categoryModel.js";
+import { logger } from "../utils/logger.js";
 
-// GET all categories
-export const getAllCategories = async (req, res) => {
+// CREATE a new category node (can be any level)
+export const createCategory = async (req, res) => {
   try {
-    const categories = await categoryModel.find();
+    const { name, parentId, type } = req.body;
+    let path = [];
+    if (parentId) {
+      const parent = await categoryModel.findById(parentId);
+      if (!parent) return res.status(400).json({ success: false, message: "Parent not found" });
+      path = [...parent.path, parent._id];
+    }
+    const node = new categoryModel({ name, parent: parentId || null, path, type });
+    await node.save();
+    res.status(201).json({ success: true, data: node });
+  } catch (e) {
+    logger.error('Error creating category', { error: e.message, stack: e.stack });
+    res.status(500).json({ success: false, message: e.message });
+  }
+};
+
+// GET all root categories (parent: null)
+export const getRootCategories = async (req, res) => {
+  try {
+    const categories = await categoryModel.find({ parent: null }).sort("name");
     res.json({ success: true, data: categories });
   } catch (error) {
+    logger.error('Error fetching root categories', { error: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// POST add or update category and subcategory
-export const addOrUpdateCategory = async (req, res) => {
-  const { name, subCategory } = req.body;
-
-  if (!name || !subCategory) {
-    return res.status(400).json({
-      success: false,
-      message: "Category and SubCategory are required.",
-    });
-  }
-
+// GET children of a category node
+export const getCategoryChildren = async (req, res) => {
   try {
-    const categoryName = name.toLowerCase().trim();
-    const subCat = subCategory.toLowerCase().trim();
-
-    let category = await categoryModel.findOne({ name: categoryName });
-
-    if (category) {
-      // Update existing category
-      if (!category.subCategories.includes(subCat)) {
-        category.subCategories.push(subCat);
-        await category.save();
-      }
-    } else {
-      // Create new category
-      category = new categoryModel({
-        name: categoryName,
-        subCategories: [subCat],
-      });
-      await category.save();
-    }
-
-    res.json({ success: true, message: "Category saved", data: category });
+    const { parentId } = req.params;
+    const children = await categoryModel.find({ parent: parentId }).sort("name");
+    res.json({ success: true, data: children });
   } catch (error) {
+    logger.error('Error fetching category children', { error: error.message, stack: error.stack, parentId });
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// OPTIONAL: Delete a subcategory from a category
-export const deleteSubCategory = async (req, res) => {
-  const { name, subCategory } = req.body;
-
+// GET a single category node by id
+export const getCategoryNode = async (req, res) => {
   try {
-    const category = await categoryModel.findOne({
-      name: name.toLowerCase().trim(),
-    });
-    if (!category)
-      return res
-        .status(404)
-        .json({ success: false, message: "Category not found" });
-
-    category.subCategories = category.subCategories.filter(
-      (sub) => sub !== subCategory.toLowerCase().trim()
-    );
-
-    if (category.subCategories.length === 0) {
-      await categoryModel.findByIdAndDelete(category._id); // remove whole category if empty
-    } else {
-      await category.save();
-    }
-
-    res.json({ success: true, message: "Subcategory deleted" });
+    const { id } = req.params;
+    const node = await categoryModel.findById(id);
+    res.json({ success: true, data: node });
   } catch (error) {
+    logger.error('Error fetching category node', { error: error.message, stack: error.stack, id });
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// DELETE entire category
+// DELETE a category node and all its descendants
 export const deleteCategory = async (req, res) => {
-  const { name } = req.body;
-
-  if (!name) {
-    return res.status(400).json({
-      success: false,
-      message: "Category name is required.",
-    });
-  }
-
   try {
-    const categoryName = name.toLowerCase().trim();
-    const deleted = await categoryModel.findOneAndDelete({ name: categoryName });
-
-    if (!deleted) {
-      return res.status(404).json({
-        success: false,
-        message: "Category not found.",
-      });
+    const { id } = req.params;
+    const idsToDelete = [id];
+    // Recursively find all descendants
+    async function findDescendants(nodeId) {
+      const children = await categoryModel.find({ parent: nodeId });
+      for (const child of children) {
+        idsToDelete.push(child._id.toString());
+        await findDescendants(child._id);
+      }
     }
-
-    res.json({
-      success: true,
-      message: `Category '${categoryName}' deleted successfully.`,
-    });
+    await findDescendants(id);
+    await categoryModel.deleteMany({ _id: { $in: idsToDelete } });
+    res.json({ success: true, deleted: idsToDelete });
   } catch (error) {
+    logger.error('Error deleting category', { error: error.message, stack: error.stack, id });
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// GET all categories (flat, for lookup)
+export const getAllCategoriesFlat = async (req, res) => {
+  try {
+    const all = await categoryModel.find({});
+    res.json({ success: true, data: all });
+  } catch (error) {
+    logger.error('Error fetching all categories (flat)', { error: error.message, stack: error.stack });
     res.status(500).json({ success: false, message: error.message });
   }
 };

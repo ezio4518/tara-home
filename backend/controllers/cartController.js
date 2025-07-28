@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js"
+import { logger } from "../utils/logger.js";
 
 
 // add products to user cart
@@ -19,7 +20,7 @@ const addToCart = async (req, res) => {
 
         res.json({ success: true, message: "Added To Cart" })
     } catch (error) {
-        console.log(error)
+        logger.error(error)
         res.json({ success: false, message: error.message })
     }
 }
@@ -37,7 +38,7 @@ const updateCart = async (req, res) => {
         await userModel.findByIdAndUpdate(userId, { cartData })
         res.json({ success: true, message: "Cart Updated" })
     } catch (error) {
-        console.log(error)
+        logger.error(error)
         res.json({ success: false, message: error.message })
     }
 }
@@ -53,7 +54,7 @@ const getUserCart = async (req, res) => {
 
         res.json({ success: true, cartData })
     } catch (error) {
-        console.log(error)
+        logger.error(error)
         res.json({ success: false, message: error.message })
     }
 }

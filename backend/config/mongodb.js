@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
+import { logger } from "../utils/logger.js";
 
 const connectDB = async () => {
 
     mongoose.connection.on('connected',() => {
-        console.log("DB Connected");
+        logger.info("DB Connected");
+    })
+
+    mongoose.connection.on('error', (err) => {
+        logger.error("DB Connection Error:", { error: err });
     })
 
     await mongoose.connect(`${process.env.MONGODB_URI}/e-commerce`)
