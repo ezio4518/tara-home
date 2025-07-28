@@ -23,6 +23,7 @@ app.use(express.json())
 app.use(cors())
 
 app.get('/health', (req, res) => {
+  console.log("Health check endpoint hit");
   res.status(200).json({
     status: 'healthy',
     message: 'Backend API is alive and well!'

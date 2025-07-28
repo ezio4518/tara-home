@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (req, res) => {
+  console.log("Health check endpoint hit");
   res.status(200).json({
     status: 'healthy',
     message: 'AI-Backend API is alive and well!'
