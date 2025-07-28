@@ -1,5 +1,6 @@
 import { findRelevantDocuments } from "../services/vectorStoreService.js";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { logger } from "../utils/logger.js";
 
 const llm = new ChatGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -46,7 +47,7 @@ export const handleChat = async (req, res) => {
 
     res.json({ success: true, answer: response.content });
   } catch (err) {
-    console.error("❌ Chat Controller Error:", err.message);
+    logger.error("❌ Chat Controller Error:", { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, error: "An error occurred while processing your request." });
   }
 };

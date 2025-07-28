@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import { logger } from "./logger.js";
 
 dotenv.config();  // Load .env file variables
 
@@ -13,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 cron.schedule("27 2 * * *", async () => {
-  console.log("Cron job started at", new Date().toLocaleString());
+  logger.info(`Cron job started at ${new Date().toLocaleString()}`);
   try {
     const orders = await orderModel.find({});
 
@@ -43,6 +44,11 @@ cron.schedule("27 2 * * *", async () => {
         PaymentDone: order.payment,
         Date: new Date(order.date).toLocaleString(),
       }));
+
+    if (worksheetData.length === 0) {
+      logger.info("No pending orders to report. Cron job finished.");
+      return;
+    }
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
     const worksheetCols = Object.keys(worksheetData[0] || {}).map((key) => ({
@@ -81,10 +87,10 @@ cron.schedule("27 2 * * *", async () => {
       ],
     });
 
-    console.log("✅ Email with Excel sent");
+    logger.info("✅ Email with Excel sent");
 
     fs.unlinkSync(filePath);
   } catch (err) {
-    console.error("❌ Failed to send Excel email:", err.message);
+    logger.error("❌ Failed to send Excel email:", { error: err.message, stack: err.stack });
   }
 });

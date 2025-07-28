@@ -2,6 +2,7 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
+import { logger } from "../utils/logger.js";
 
 const createToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -67,7 +68,7 @@ const registerUser = async (req, res) => {
       coin: user.coin,
     });
   } catch (error) {
-    console.error("Registration Error:", error);
+    logger.error("Registration Error:", { error: error.message, stack: error.stack });
     res.json({ success: false, message: error.message });
   }
 };
@@ -105,7 +106,7 @@ const loginUser = async (req, res) => {
       coin: user.coin,
     });
   } catch (error) {
-    console.error("Login Error:", error);
+    logger.error("Login Error:", { error: error.message, stack: error.stack });
     res.json({ success: false, message: error.message });
   }
 };
@@ -124,7 +125,7 @@ const adminLogin = async (req, res) => {
       res.json({ success: false, message: "Invalid admin credentials." });
     }
   } catch (error) {
-    console.error("Admin Login Error:", error);
+    logger.error("Admin Login Error:", { error: error.message, stack: error.stack });
     res.json({ success: false, message: error.message });
   }
 };
@@ -141,7 +142,7 @@ const getUserInfo = async (req, res) => {
     const { name, email, phone, coin, address } = user;
     res.json({ success: true, name, email, phone, coin, address });
   } catch (error) {
-    console.error("Get User Info Error:", error);
+    logger.error("Get User Info Error:", { error: error.message, stack: error.stack });
     res.json({ success: false, message: error.message });
   }
 };
@@ -164,7 +165,7 @@ const updateProfile = async (req, res) => {
         res.json({ success: true, message: "Profile updated successfully." });
 
     } catch (error) {
-        console.error("Update Profile Error:", error);
+        logger.error("Update Profile Error:", { error: error.message, stack: error.stack });
         res.json({ success: false, message: "Error updating profile." });
     }
 };

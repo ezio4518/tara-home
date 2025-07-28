@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import { logger } from '../utils/logger.js';
 
 const adminAuth = async (req,res,next) => {
     try {
@@ -12,7 +13,7 @@ const adminAuth = async (req,res,next) => {
         }
         next()
     } catch (error) {
-        console.log(error)
+        logger.error(error)
         res.json({ success: false, message: error.message })
     }
 }

@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import AdmZip from "adm-zip";
 import csv from "csv-parser";
+import { logger } from "../utils/logger.js";
 dotenv.config();
 
 
@@ -68,7 +69,7 @@ const bulkUploadProducts = async (req, res) => {
           } = row;
 
           if (!name?.trim() || !price?.trim() || !category?.trim()) {
-            console.warn("⚠️ Skipping row due to missing required fields:", row);
+            logger.warn("⚠️ Skipping row due to missing required fields:", { row });
             skippedRows++;
             continue;
           }
@@ -90,7 +91,7 @@ const bulkUploadProducts = async (req, res) => {
             parent = node._id;
           }
           if (!node) {
-            console.warn("⚠️ Could not find or create category node for:", row.category);
+            logger.warn("⚠️ Could not find or create category node for:", { category: row.category });
             skippedRows++;
             continue;
           }
@@ -108,7 +109,7 @@ const bulkUploadProducts = async (req, res) => {
             }
           }
           if (uploadedImages.length === 0) {
-            console.warn(`⚠️ Skipping row — no image uploaded:`, name || row);
+            logger.warn(`⚠️ Skipping row — no image uploaded:`, { name });
             skippedRows++;
             continue;
           }
@@ -127,14 +128,14 @@ const bulkUploadProducts = async (req, res) => {
           // --- START: AI Notification ---
           try {
             await aiApiClient.post("/api/product", product.toObject());
-            console.log(`✅ AI Notification sent for added product: ${product.name}`);
+            logger.info(`✅ AI Notification sent for added product: ${product.name}`);
           } catch (err) {
-            console.error("❌ AI backend notification failed for added product:", err.message);
+            logger.error("❌ AI backend notification failed for added product:", { error: err.message });
           }
           // --- END: AI Notification ---
 
           uploadedCount++;
-          console.log(`Upload ${uploadedCount} completed : ${name}`);
+          logger.info(`Upload ${uploadedCount} completed : ${name}`);
         }
         fs.unlinkSync(csvFile.path);
         fs.unlinkSync(zipFile.path);
@@ -147,7 +148,7 @@ const bulkUploadProducts = async (req, res) => {
         });
       });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -192,15 +193,15 @@ const addProduct = async (req, res) => {
     try {
       // Use the toObject() method to get a plain JS object for sending
       await aiApiClient.post("/api/product", product.toObject());
-      console.log(`✅ AI Notification sent for added product: ${product.name}`);
+      logger.info(`✅ AI Notification sent for added product: ${product.name}`);
     } catch (err) {
-      console.error("❌ AI backend notification failed for added product:", err.message);
+      logger.error("❌ AI backend notification failed for added product:", { error: err.message });
     }
     // --- END: AI Notification ---
 
     res.json({ success: true, message: "Product Added" });
   } catch (error) {
-    console.log(error);
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -210,6 +211,7 @@ const listProducts = async (req, res) => {
     const products = await productModel.find({}).populate("category");
     res.json({ success: true, products });
   } catch (error) {
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -226,14 +228,15 @@ const removeProduct = async (req, res) => {
     // --- START: AI Notification ---
     try {
         await aiApiClient.delete(`/api/product/${productId}`);
-        console.log(`✅ AI Notification sent for deleted product: ${productId}`);
+        logger.info(`✅ AI Notification sent for deleted product: ${productId}`);
     } catch (err) {
-        console.error("❌ AI backend notification failed for deleted product:", err.message);
+        logger.error("❌ AI backend notification failed for deleted product:", { error: err.message });
     }
     // --- END: AI Notification ---
 
     res.json({ success: true, message: "Product Removed" });
   } catch (error) {
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -244,6 +247,7 @@ const singleProduct = async (req, res) => {
     const product = await productModel.findById(productId).populate("category");
     res.json({ success: true, product });
   } catch (error) {
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };
@@ -291,15 +295,16 @@ const updateProduct = async (req, res) => {
     if (updatedProduct) {
         try {
             await aiApiClient.post("/api/product", updatedProduct.toObject());
-            console.log(`✅ AI Notification sent for updated product: ${updatedProduct.name}`);
+            logger.info(`✅ AI Notification sent for updated product: ${updatedProduct.name}`);
         } catch (err) {
-            console.error("❌ AI backend notification failed for updated product:", err.message);
+            logger.error("❌ AI backend notification failed for updated product:", { error: err.message });
         }
     }
     // --- END: AI Notification ---
 
     res.json({ success: true, message: "Product updated successfully" });
   } catch (error) {
+    logger.error(error);
     res.json({ success: false, message: error.message });
   }
 };

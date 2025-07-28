@@ -3,6 +3,7 @@ import {
   deleteVectorsByFilter,
   reEmbedFaq,
 } from "../services/vectorStoreService.js";
+import { logger } from "../utils/logger.js";
 
 /**
  * Handles adding or updating a product's vector embedding.
@@ -28,7 +29,7 @@ export const addOrUpdateProduct = async (req, res) => {
     
     res.json({ success: true, message: `Product ${productData._id} was successfully updated in the knowledge base.` });
   } catch (err) {
-    console.error(`❌ Error embedding product ${productData._id}:`, err.message);
+    logger.error(`❌ Error embedding product ${productData._id}:`, { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, error: "Failed to update product vector." });
   }
 };
@@ -47,7 +48,7 @@ export const deleteProduct = async (req, res) => {
     await deleteVectorsByFilter(filter);
     res.json({ success: true, message: `Product ${productId} vectors have been deleted from the knowledge base.` });
   } catch (err) {
-    console.error(`❌ Error deleting product ${productId} vectors:`, err.message);
+    logger.error(`❌ Error deleting product ${productId} vectors:`, { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, error: "Failed to delete product vectors." });
   }
 };
@@ -60,7 +61,7 @@ export const updateFaq = async (req, res) => {
     await reEmbedFaq();
     res.json({ success: true, message: "FAQ has been successfully updated in the knowledge base." });
   } catch (err) {
-    console.error("❌ Error updating FAQ:", err.message);
+    logger.error("❌ Error updating FAQ:", { error: err.message, stack: err.stack });
     res.status(500).json({ success: false, error: "Failed to update FAQ." });
   }
 };

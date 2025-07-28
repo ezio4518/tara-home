@@ -5,6 +5,7 @@ import { TextLoader } from "langchain/document_loaders/fs/text";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { getCollection } from "../config/mongodb.js";
 import fs from "fs/promises";
+import { logger } from "../utils/logger.js";
 
 // Initialize models and splitters once to be efficient
 const embeddings = new HuggingFaceTransformersEmbeddings({
@@ -34,7 +35,7 @@ const getVectorStore = async () => {
 export const deleteVectorsByFilter = async (filter) => {
   const collection = await getCollection();
   const result = await collection.deleteMany(filter);
-  console.log(`✅ Deleted ${result.deletedCount} vector(s) matching filter:`, filter);
+  logger.info(`✅ Deleted ${result.deletedCount} vector(s) matching filter:`, { filter });
   return result;
 };
 
@@ -55,7 +56,7 @@ export const embedProduct = async (productData) => {
 
   const vectorStore = await getVectorStore();
   await vectorStore.addDocuments([doc]);
-  console.log(`✅ Embedded product with ID: ${_id}`);
+  logger.info(`✅ Embedded product with ID: ${_id}`);
 };
 
 /**
@@ -72,7 +73,7 @@ export const reEmbedFaq = async () => {
 
   const vectorStore = await getVectorStore();
   await vectorStore.addDocuments(splitDocs);
-  console.log(`✅ Re-embedded ${splitDocs.length} chunks from faq.txt`);
+  logger.info(`✅ Re-embedded ${splitDocs.length} chunks from faq.txt`);
 };
 
 /**
