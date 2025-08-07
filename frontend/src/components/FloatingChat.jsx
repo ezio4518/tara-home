@@ -14,7 +14,9 @@ const FloatingChat = () => {
   const messagesEndRef = useRef(null);
 
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    // Prevent sending empty or while loading
+    if (!input.trim() || loading) return;
+    
     const userMsg = { text: input, sender: "user" };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
@@ -42,9 +44,14 @@ const FloatingChat = () => {
     }
   };
 
+  // --- MODIFIED CODE [START] ---
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessage();
+    // Check for Enter key and not loading
+    if (e.key === "Enter" && !loading) {
+      sendMessage();
+    }
   };
+  // --- MODIFIED CODE [END] ---
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -110,22 +117,27 @@ const FloatingChat = () => {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* --- MODIFIED CODE [START] --- */}
           <div className="flex items-center gap-2">
             <input
               type="text"
-              placeholder="Type a message..."
+              placeholder={loading ? "Waiting for response..." : "Type a message..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 border border-[#A1876F] rounded px-3 py-2 text-sm text-[#40350A] focus:outline-none"
+              disabled={loading} // Disable input when loading
+              className="flex-1 border border-[#A1876F] rounded px-3 py-2 text-sm text-[#40350A] focus:outline-none disabled:bg-gray-200 disabled:cursor-not-allowed"
             />
             <button
               onClick={sendMessage}
-              className="text-sm bg-[#40350A] text-white px-4 py-2 rounded hover:bg-[#5a4812]"
+              disabled={loading} // Disable button when loading
+              className="text-sm bg-[#40350A] text-white px-4 py-2 rounded hover:bg-[#5a4812] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               Send
             </button>
           </div>
+          {/* --- MODIFIED CODE [END] --- */}
+
         </div>
       )}
 

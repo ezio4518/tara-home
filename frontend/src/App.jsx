@@ -40,28 +40,37 @@ const App = () => {
   }, []);
 
   return (
-    <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
-      <Navbar />
-      <SearchBar />
+    // Use a React Fragment to wrap the app layout and the ToastContainer
+    <>
+      <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
+        <Navbar />
+        <SearchBar />
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/collection" element={<Collection />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/product/:productId" element={<Product />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/place-order" element={<PlaceOrder />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/verify" element={<Verify />} />
-      </Routes>
-      <FloatingFeedback />
-      <FloatingChat />
-      <Footer />
-      <ToastContainer />
-    </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/collection" element={<Collection />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/product/:productId" element={<Product />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/place-order" element={<PlaceOrder />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/verify" element={<Verify />} />
+        </Routes>
+        <FloatingFeedback />
+        <FloatingChat />
+        <Footer />
+      </div>
+      
+      {/* Place ToastContainer outside the main layout div */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme="light"
+      />
+    </>
   );
 };
 

@@ -36,25 +36,35 @@ const registerUser = async (req, res) => {
       });
     }
 
-    // Check if email or phone already exists
-    const existingUser = await userModel.findOne({
-      $or: [{ email }, { phone }],
-    });
+    // Build the query conditions dynamically
+    const orConditions = [];
+    if (email) {
+      orConditions.push({ email });
+    }
+    if (phone) {
+      orConditions.push({ phone });
+    }
 
-    if (existingUser) {
-      return res.json({
-        success: false,
-        message: "User already exists with this email or phone.",
-      });
+    if (orConditions.length > 0) {
+      const existingUser = await userModel.findOne({ $or: orConditions });
+
+      if (existingUser) {
+        return res.json({
+          success: false,
+          message: "User already exists with this email or phone.",
+        });
+      }
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    // Create new user, ensuring empty optional fields are saved as null
+    // This is critical for the sparse unique index to work correctly.
     const newUser = new userModel({
       name,
-      email,
-      phone,
+      email: email || null,
+      phone: phone || null,
       password: hashedPassword,
     });
 
@@ -68,7 +78,10 @@ const registerUser = async (req, res) => {
       coin: user.coin,
     });
   } catch (error) {
+    // Log the full error to the console for easier debugging
+    console.error("Registration Error:", error);
     logger.error("Registration Error:", { error: error.message, stack: error.stack });
+    // Send a more generic message to the client, but include the specific error from the DB
     res.json({ success: false, message: error.message });
   }
 };
@@ -85,9 +98,16 @@ const loginUser = async (req, res) => {
       });
     }
 
-    const user = await userModel.findOne({
-      $or: [{ email }, { phone }],
-    });
+    // Build query conditions dynamically for a precise user lookup
+    const orConditions = [];
+    if (email) {
+      orConditions.push({ email });
+    }
+    if (phone) {
+      orConditions.push({ phone });
+    }
+    
+    const user = await userModel.findOne({ $or: orConditions });
 
     if (!user) {
       return res.json({ success: false, message: "User does not exist." });
